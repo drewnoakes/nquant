@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -13,6 +13,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright Matt Wrock 2011")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyTrademarkAttribute("")]
-[assembly: AssemblyVersion("0.7.0")]
-[assembly: AssemblyFileVersion("0.7.0")]
+[assembly: AssemblyTrademarkAttribute("1:2e6b6b1587775e07b47a67b6309cd36bc022c30d")]
+[assembly: AssemblyVersion("0.9.2")]
+[assembly: AssemblyFileVersion("0.9.2")]

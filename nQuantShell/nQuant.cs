@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Drawing.Imaging;
+using System.Reflection;
 
 namespace nQuant
 {
@@ -17,7 +18,7 @@ namespace nQuant
 
         public static void Main(string[] args)
         {
-            Console.WriteLine("nQuant .net color Quantizer. An adaptation of Xiaolin Wu's fast optimal color quantizer.");
+            Console.WriteLine("nQuant Version {0} .net color Quantizer. An adaptation of Xiaolin Wu's fast optimal color quantizer.", Assembly.GetExecutingAssembly().GetName().Version);
             Console.WriteLine("Copyright (C) 2011 Matt Wrock.");
 
             if(args.Length < 1)

@@ -5,7 +5,7 @@ properties {
     $baseDir = Split-Path -parent $Invocation.MyCommand.Definition | split-path -parent | split-path -parent | split-path -parent
     $configuration = "debug"
 	$filesDir = "$baseDir\BuildFiles"
-	$version = "0.9." + (hg log --pretty=oneline | measure-object).Count
+	$version = "0.9." + (hg log --template '{rev}:{node}\n' | measure-object).Count
 }
 
 task Debug -depends Default
@@ -17,7 +17,7 @@ task Clean-Solution -depends Clean-BuildFiles {
 }
 
 task Update-AssemblyInfoFiles {
-	$commit = hg log -1 --pretty=format:%H
+	$commit = hg log --template '{rev}:{node}\n' -l 1
 	Update-AssemblyInfoFiles $version $commit
 }
 
@@ -64,7 +64,7 @@ function create([string[]]$paths) {
 function Update-AssemblyInfoFiles ([string] $version, [string] $commit) {
     $assemblyVersionPattern = 'AssemblyVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'
     $fileVersionPattern = 'AssemblyFileVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'
-    $fileCommitPattern = 'AssemblyTrademarkAttribute\("[a-f0-9]{40}"\)'
+    $fileCommitPattern = 'AssemblyTrademarkAttribute\("[0-9]+:[a-f0-9]{40}"\)'
     $assemblyVersion = 'AssemblyVersion("' + $version + '")';
     $fileVersion = 'AssemblyFileVersion("' + $version + '")';
     $commitVersion = 'AssemblyTrademarkAttribute("' + $commit + '")';
