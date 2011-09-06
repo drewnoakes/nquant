@@ -1,0 +1,14 @@
+glob:_*
+glob:bin
+glob:obj
+glob:*.suo
+glob:*.user
+glob:*.cache
+glob:*.dbmdl
+glob:debug
+glob:release
+glob:BuildResults.xml
+glob:*.results.xml
+glob:test-results.html
+glob:.tfs-ignore
+glob:*.orig
