@@ -12,3 +12,5 @@ glob:*.results.xml
 glob:test-results.html
 glob:.tfs-ignore
 glob:*.orig
+glob:nQuant.Core\Nuget\Tools
+glob:nQuant.Core\Nuget\Lib

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace nQuant
 {
-    public class ColorData
+    internal class ColorData
     {
         public ColorData(int dataGranularity)
         {

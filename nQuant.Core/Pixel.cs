@@ -1,6 +1,6 @@
 namespace nQuant
 {
-    public struct Pixel
+    internal struct Pixel
     {
         public Pixel(byte alpha, byte red, byte green, byte blue) : this()
         {

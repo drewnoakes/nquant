@@ -34,13 +34,19 @@ task Push-Nuget {
 }
 
 task Build-Output {
+	clean $baseDir\nquant.core\Nuget\Lib
+	create $baseDir\nquant.core\Nuget\Lib
+	Copy-Item $baseDir\nquant.core\bin\$configuration\*.* $baseDir\nquant.core\Nuget\Lib
+	clean $baseDir\nquant.core\Nuget\Tools
+	create $baseDir\nquant.core\Nuget\Tools
+	Copy-Item $baseDir\nquantShell\bin\$configuration\*.* $baseDir\nquant.core\Nuget\Tools
 	clean $filesDir
 	create $filesDir
-    $Spec = [xml](get-content "nQuant\Nuget\nQuant.nuspec")
+    $Spec = [xml](get-content "nQuant.core\Nuget\nQuant.nuspec")
     $Spec.package.metadata.version = $version
-    $Spec.Save("nQuant\Nuget\nQuant.nuspec")
-	exec { .\Tools\zip.exe -j -9 $filesDir\nQuant$version.zip $baseDir\nQuant\Nuget\Lib\nQuant.Core.dll $baseDir\nQuant\Nuget\Lib\nQuant.Core.pdb $baseDir\License.txt $baseDir\nQuant\Nuget\Tools\nQuant.exe }
-    exec { .\Tools\nuget.exe pack "nQuant\Nuget\nQuant.nuspec" -o $filesDir }
+    $Spec.Save("nQuant.core\Nuget\nQuant.nuspec")
+	exec { .\Tools\zip.exe -j -9 $filesDir\nQuant$version.zip $baseDir\nQuant.core\Nuget\Lib\nQuant.Core.dll $baseDir\nQuant.core\Nuget\Lib\nQuant.Core.pdb $baseDir\License.txt $baseDir\nQuant.core\Nuget\Tools\nQuant.exe $baseDir\nQuant.core\Nuget\Tools\nQuant.pdb }
+    exec { .\Tools\nuget.exe pack "nQuant.core\Nuget\nQuant.nuspec" -o $filesDir }
 }
 
 function roboexec([scriptblock]$cmd) {
