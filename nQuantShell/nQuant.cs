@@ -44,9 +44,16 @@ namespace nQuant
             var quantizer = new WuQuantizer();
             using(var bitmap = new Bitmap(sourcePath))
             {
-                using(var quantized = quantizer.QuantizeImage(bitmap, alphaTransparency, alphaFader))
+                try
                 {
-                    quantized.Save(targetPath, ImageFormat.Png);
+                    using(var quantized = quantizer.QuantizeImage(bitmap, alphaTransparency, alphaFader))
+                    {
+                        quantized.Save(targetPath, ImageFormat.Png);
+                    }
+                }
+                catch (QuantizationException q)
+                {
+                    Console.WriteLine(q.Message);
                 }
             }
 
