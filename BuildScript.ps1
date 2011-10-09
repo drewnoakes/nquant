@@ -65,8 +65,14 @@ task Build-Output {
     $Spec = [xml](get-content "nQuant.core\Nuget\nQuant.nuspec")
     $Spec.package.metadata.version = $version
     $Spec.Save("nQuant.core\Nuget\nQuant.nuspec")
-	exec { .\Tools\zip.exe -j -9 $filesDir\nQuant-net20-$version.zip $baseDir\nQuant.core\Nuget\Lib\net20\nQuant.Core.dll $baseDir\nQuant.core\Nuget\Lib\net20\nQuant.Core.pdb $baseDir\License.txt $baseDir\nQuant.core\Nuget\Tools\net20\nQuant.exe $baseDir\nQuant.core\Nuget\Tools\net20\nQuant.pdb }
-	exec { .\Tools\zip.exe -j -9 $filesDir\nQuant-net40-$version.zip $baseDir\nQuant.core\Nuget\Lib\net40\nQuant.Core.dll $baseDir\nQuant.core\Nuget\Lib\net40\nQuant.Core.pdb $baseDir\License.txt $baseDir\nQuant.core\Nuget\Tools\net40\nQuant.exe $baseDir\nQuant.core\Nuget\Tools\net40\nQuant.pdb }
+	create $filesDir\net35
+	create $filesDir\net40
+	Copy-Item $baseDir\nquantShell\bin\v3.5\$configuration\*.* $filesDir\net35
+	Copy-Item $baseDir\nquantShell\bin\v4.0\$configuration\*.* $filesDir\net40
+	Copy-Item $baseDir\License.txt $filesDir
+	cd $filesDir
+	exec { ..\Tools\zip.exe -9 -r nQuant-$version.zip . }
+	cd $currentDir
     exec { .\Tools\nuget.exe pack "nQuant.core\Nuget\nQuant.nuspec" -o $filesDir }
 }
 
