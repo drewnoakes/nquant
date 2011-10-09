@@ -6,11 +6,27 @@ properties {
     $configuration = "debug"
 	$filesDir = "$baseDir\BuildFiles"
 	$version = "0.9." + (hg log --template '{rev}:{node}\n' | measure-object).Count
+	$projectFiles = "$baseDir\nQuantShell\nQuant.csproj", "$baseDir\nQuant.Core\nQuant.Core.csproj"
 }
 
 task Debug -depends Default
-task Default -depends Clean-Solution, Build-Solution
-task Download -depends Clean-Solution, Update-AssemblyInfoFiles, Build-Solution, Build-Output
+task Default -depends Revert-Projects, Clean-Solution, Build-Solution
+task BuildNet35 -depends Setup-35-Projects, Clean-Solution, Build-Solution, Revert-Projects
+task Download -depends Setup-40-Projects, Clean-Solution, Update-AssemblyInfoFiles, Build-Solution, Build-Output, Revert-Projects
+task Reset -depends Revert-Projects
+
+task Setup-35-Projects {
+	Change-Framework-Version $projectFiles '3.5'
+}
+
+task Setup-40-Projects {
+	Change-Framework-Version $projectFiles '4.0'
+}
+
+task Revert-Projects {
+	Change-Framework-Version $projectFiles '4.0'
+	Change-OutputPath $projectFiles
+}
 
 task Clean-Solution -depends Clean-BuildFiles {
     exec { msbuild nQuant.sln /t:Clean /v:quiet }
@@ -35,17 +51,22 @@ task Push-Nuget {
 
 task Build-Output {
 	clean $baseDir\nquant.core\Nuget\Lib
-	create $baseDir\nquant.core\Nuget\Lib
-	Copy-Item $baseDir\nquant.core\bin\$configuration\*.* $baseDir\nquant.core\Nuget\Lib
+	create $baseDir\nquant.core\Nuget\Lib\net20
+	create $baseDir\nquant.core\Nuget\Lib\net40
+	Copy-Item $baseDir\nquant.core\bin\v3.5\$configuration\*.* $baseDir\nquant.core\Nuget\Lib\net20
+	Copy-Item $baseDir\nquant.core\bin\v4.0\$configuration\*.* $baseDir\nquant.core\Nuget\Lib\net40
 	clean $baseDir\nquant.core\Nuget\Tools
-	create $baseDir\nquant.core\Nuget\Tools
-	Copy-Item $baseDir\nquantShell\bin\$configuration\*.* $baseDir\nquant.core\Nuget\Tools
+	create $baseDir\nquant.core\Nuget\Tools\net20
+	create $baseDir\nquant.core\Nuget\Tools\net40
+	Copy-Item $baseDir\nquantShell\bin\v3.5\$configuration\*.* $baseDir\nquant.core\Nuget\Tools\net20
+	Copy-Item $baseDir\nquantShell\bin\v4.0\$configuration\*.* $baseDir\nquant.core\Nuget\Tools\net40
 	clean $filesDir
 	create $filesDir
     $Spec = [xml](get-content "nQuant.core\Nuget\nQuant.nuspec")
     $Spec.package.metadata.version = $version
     $Spec.Save("nQuant.core\Nuget\nQuant.nuspec")
-	exec { .\Tools\zip.exe -j -9 $filesDir\nQuant$version.zip $baseDir\nQuant.core\Nuget\Lib\nQuant.Core.dll $baseDir\nQuant.core\Nuget\Lib\nQuant.Core.pdb $baseDir\License.txt $baseDir\nQuant.core\Nuget\Tools\nQuant.exe $baseDir\nQuant.core\Nuget\Tools\nQuant.pdb }
+	exec { .\Tools\zip.exe -j -9 $filesDir\nQuant-net20-$version.zip $baseDir\nQuant.core\Nuget\Lib\net20\nQuant.Core.dll $baseDir\nQuant.core\Nuget\Lib\net20\nQuant.Core.pdb $baseDir\License.txt $baseDir\nQuant.core\Nuget\Tools\net20\nQuant.exe $baseDir\nQuant.core\Nuget\Tools\net20\nQuant.pdb }
+	exec { .\Tools\zip.exe -j -9 $filesDir\nQuant-net40-$version.zip $baseDir\nQuant.core\Nuget\Lib\net40\nQuant.Core.dll $baseDir\nQuant.core\Nuget\Lib\net40\nQuant.Core.pdb $baseDir\License.txt $baseDir\nQuant.core\Nuget\Tools\net40\nQuant.exe $baseDir\nQuant.core\Nuget\Tools\net40\nQuant.pdb }
     exec { .\Tools\nuget.exe pack "nQuant.core\Nuget\nQuant.nuspec" -o $filesDir }
 }
 
@@ -90,4 +111,24 @@ function Update-AssemblyInfoFiles ([string] $version, [string] $commit) {
 			% {$_ -replace $fileCommitPattern, $commitVersion }
         } | Set-Content $filename
     }
+}
+
+function Change-Framework-Version ([string[]] $projFiles, [string] $frameworkVersion) {
+	foreach ($projFile in $projFiles) {	
+		$content = [xml] (get-content $projFile)
+		$content.Project.SetAttribute("ToolsVersion", $frameworkVersion)
+		$content.Project.PropertyGroup[0].TargetFrameworkVersion = "v$frameworkVersion"
+		$content.Project.PropertyGroup[1].OutputPath = "bin\v$frameworkVersion\Debug\"
+		$content.Project.PropertyGroup[2].OutputPath = "bin\v$frameworkVersion\Release\"
+		$content.Save($projFile)
+	}
+}
+
+function Change-OutputPath ([string[]] $projFiles) {
+	foreach ($projFile in $projFiles) {	
+		$content = [xml] (get-content $projFile)
+		$content.Project.PropertyGroup[1].OutputPath = "bin\Debug\"
+		$content.Project.PropertyGroup[2].OutputPath = "bin\Release\"
+		$content.Save($projFile)
+	}
 }

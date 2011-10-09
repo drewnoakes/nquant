@@ -33,7 +33,7 @@ namespace nQuant
                 Console.WriteLine("The source file you specified does not exist.");
                 Environment.Exit(1);
             }
-            if (string.IsNullOrWhiteSpace(targetPath))
+            if (string.IsNullOrEmpty(targetPath))
             {
                 var lastDot = sourcePath.LastIndexOf('.');
                 if (lastDot == -1)
