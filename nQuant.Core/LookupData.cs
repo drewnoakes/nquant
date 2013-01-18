@@ -2,14 +2,6 @@ using System.Collections.Generic;
 
 namespace nQuant
 {
-    internal class Lookup
-    {
-        public int Alpha { get; set; }
-        public int Red { get; set; }
-        public int Green { get; set; }
-        public int Blue { get; set; }
-    }
-
     internal class LookupData
     {
         public LookupData(int granularity)
@@ -20,6 +12,5 @@ namespace nQuant
 
         public IList<Lookup> Lookups { get; private set; }
         public int[, , ,] Tags { get; private set; }
-
     }
 }

@@ -44,6 +44,7 @@
     <Compile Include="Box.cs" />
     <Compile Include="ColorData.cs" />
     <Compile Include="CubeCut.cs" />
+    <Compile Include="Lookup.cs" />
     <Compile Include="LookupData.cs" />
     <Compile Include="Pixel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

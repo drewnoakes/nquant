@@ -105,10 +105,10 @@ namespace nQuant
                 var value = new Byte[byteCount];
 
                 Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
-                for (var y = 0; y < sourceImage.Height; y++)
+                for (int y = 0; y < sourceImage.Height; y++)
                 {
                     var index = 0;
-                    for (var x = 0; x < sourceImage.Width; x++)
+                    for (int x = 0; x < sourceImage.Width; x++)
                     {
                         var indexOffset = index >> 3;
 
@@ -562,10 +562,11 @@ namespace nQuant
             return lookups;
         }
 
+        // todo speed: this takes 88% of time
         private static QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold)
         {
             var imageSize = data.Pixels.Count;
-            var lookups = BuildLookups(cubes, data);
+            LookupData lookups = BuildLookups(cubes, data);
 
             for(var index = 0; index < imageSize; ++index)
             {
@@ -579,42 +580,45 @@ namespace nQuant
             var blues = new int[colorCount + 1];
             var sums = new int[colorCount + 1];
             var palette = new QuantizedPalette(imageSize);
-            var index2 = -1;
 
-            foreach (var pixel in data.Pixels)
+            int pixelsCount = data.Pixels.Count;
+            int lookupsCount = lookups.Lookups.Count;
+
+            for (int pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)
             {
-                palette.PixelIndex[++index2] = -1;
-                if(pixel.Alpha <= alphaThreshold)
+                Pixel pixel = data.Pixels[pixelIndex];
+                palette.PixelIndex[pixelIndex] = -1;
+                if (pixel.Alpha <= alphaThreshold)
                     continue;
 
-                var match = data.QuantizedPixels[index2];
-                var bestMatch = match;
-                var bestDistance = 100000000;
-                var index = -1;
+                int match = data.QuantizedPixels[pixelIndex];
+                int bestMatch = match;
+                int bestDistance = int.MaxValue;
 
-                foreach (var lookup in lookups.Lookups)
+                for (int lookupIndex = 0; lookupIndex < lookupsCount; lookupIndex++)
                 {
-                    ++index;
+                    Lookup lookup = lookups.Lookups[lookupIndex];
                     var deltaAlpha = pixel.Alpha - lookup.Alpha;
                     var deltaRed = pixel.Red - lookup.Red;
                     var deltaGreen = pixel.Green - lookup.Green;
                     var deltaBlue = pixel.Blue - lookup.Blue;
 
-                    var distance = deltaAlpha * deltaAlpha + deltaRed * deltaRed + deltaGreen * deltaGreen + deltaBlue * deltaBlue;
+                    int distance = deltaAlpha*deltaAlpha + deltaRed*deltaRed + deltaGreen*deltaGreen + deltaBlue*deltaBlue;
 
-                    if (distance >= bestDistance) continue;
+                    if (distance >= bestDistance) 
+                        continue;
 
                     bestDistance = distance;
-                    bestMatch = index;
+                    bestMatch = lookupIndex;
                 }
-                
+
                 alphas[bestMatch] += pixel.Alpha;
                 reds[bestMatch] += pixel.Red;
                 greens[bestMatch] += pixel.Green;
                 blues[bestMatch] += pixel.Blue;
                 sums[bestMatch]++;
 
-                palette.PixelIndex[index2] = bestMatch;
+                palette.PixelIndex[pixelIndex] = bestMatch;
             }
 
             for (var paletteIndex = 0; paletteIndex < colorCount; paletteIndex++)
@@ -630,6 +634,7 @@ namespace nQuant
                 var color = Color.FromArgb(alphas[paletteIndex], reds[paletteIndex], greens[paletteIndex], blues[paletteIndex]);
                 palette.Colors.Add(color);
             }
+
             palette.Colors.Add(Color.FromArgb(0, 0, 0, 0));
 
             return palette;
