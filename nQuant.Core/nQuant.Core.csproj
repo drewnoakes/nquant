@@ -44,6 +44,7 @@
     <Compile Include="Box.cs" />
     <Compile Include="ColorData.cs" />
     <Compile Include="CubeCut.cs" />
+    <Compile Include="IWuQuantizer.cs" />
     <Compile Include="Lookup.cs" />
     <Compile Include="LookupData.cs" />
     <Compile Include="Pixel.cs" />
@@ -51,6 +52,8 @@
     <Compile Include="QuantizationException.cs" />
     <Compile Include="QuantizedPalette.cs" />
     <Compile Include="WuQuantizer.cs" />
+    <Compile Include="WuQuantizerBase.cs" />
+    <Compile Include="WuQuantizerParallel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Nuget\nQuant.nuspec" />

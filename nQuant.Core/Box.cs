@@ -1,6 +1,6 @@
 namespace nQuant
 {
-    internal struct Box
+    public struct Box
     {
         public byte AlphaMinimum;
         public byte AlphaMaximum;

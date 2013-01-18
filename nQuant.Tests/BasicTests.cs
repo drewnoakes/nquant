@@ -10,13 +10,16 @@ namespace nQuant.Tests
         [Test]
         public void OptimizeTest()
         {
-            WuQuantizer quantizer = new WuQuantizer ();
+            const int Runs = 1;
+
+            IWuQuantizer quantizer;
             using (Bitmap bitmap = (Bitmap)Bitmap.FromFile (@"../../../samples/topo.png"))
             {
                 Stopwatch sw = new Stopwatch ();
+
+                quantizer = new WuQuantizer ();
                 sw.Start ();
 
-                const int Runs = 1;
                 for (int i = 0; i < Runs; i++)
                 {
                     int alphaTransparency = 0;
@@ -26,6 +29,19 @@ namespace nQuant.Tests
                 }
 
                 Debug.WriteLine ("nQuant: {0} ms/image", sw.ElapsedMilliseconds / Runs);
+
+                quantizer = new WuQuantizerParallel();
+                sw.Restart();
+
+                for (int i = 0; i < Runs; i++)
+                {
+                    int alphaTransparency = 0;
+                    int alphaFader = 0;
+                    using (Image quantized = quantizer.QuantizeImage (bitmap, alphaTransparency, alphaFader))
+                        quantized.Save ("output_nQuant_parallel.png", ImageFormat.Png);
+                }
+
+                Debug.WriteLine ("nQuant parallel: {0} ms/image", sw.ElapsedMilliseconds / Runs);
             }            
         }         
     }

@@ -1,6 +1,6 @@
 namespace nQuant
 {
-    internal class Lookup
+    public class Lookup
     {
         public int Alpha { get; set; }
         public int Red { get; set; }

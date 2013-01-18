@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace nQuant
 {
-    internal class QuantizedPalette
+    public class QuantizedPalette
     {
         public QuantizedPalette(int size)
         {

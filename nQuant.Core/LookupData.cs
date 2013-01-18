@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace nQuant
 {
-    internal class LookupData
+    public class LookupData
     {
         public LookupData(int granularity)
         {
