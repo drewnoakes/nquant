@@ -19,10 +19,12 @@ namespace nQuant
 
         protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold)
         {
-            int imageSize = data.PixelsCount;
+            int pixelsCount = data.PixelsCount;
+            IList<Pixel> pixels = data.Pixels;
+
             LookupData lookups = BuildLookups(cubes, data);
 
-            for (var index = 0; index < imageSize; ++index)
+            for (var index = 0; index < pixelsCount; ++index)
             {
                 var indexParts = BitConverter.GetBytes(data.QuantizedPixels[index]);
                 data.QuantizedPixels[index] = lookups.Tags[indexParts[Alpha], indexParts[Red], indexParts[Green], indexParts[Blue]];
@@ -33,47 +35,73 @@ namespace nQuant
             var greens = new int[colorCount + 1];
             var blues = new int[colorCount + 1];
             var sums = new int[colorCount + 1];
-            var palette = new QuantizedPalette(imageSize);
+            var palette = new QuantizedPalette(pixelsCount);
 
             int lookupsCount = lookups.Lookups.Count;
 
-            Parallel.ForEach(
-                data.Pixels,
+            // split processing into batches 
+            int parallels = parallelOptions.MaxDegreeOfParallelism > 0 ? parallelOptions.MaxDegreeOfParallelism : Environment.ProcessorCount;
+            int pixelsPerFrame = pixelsCount / parallels;
+            // make sure we don't run on too small frames
+            pixelsPerFrame = Math.Max (10000, pixelsPerFrame);
+            int totalFrames = (int)Math.Ceiling (((double)pixelsCount) / pixelsPerFrame);
+
+            Parallel.For(
+                0,
+                totalFrames,
                 parallelOptions,
-                (pixel, state, pixelIndex) =>
+                frame =>
                     {
-                        palette.PixelIndex[pixelIndex] = -1;
-                        if (pixel.Alpha <= alphaThreshold)
-                            return;
+                        Dictionary<int, int> cachedMaches = new Dictionary<int, int> ();
 
-                        int match = data.QuantizedPixels[(int)pixelIndex];
-                        int bestMatch = match;
-                        int bestDistance = int.MaxValue;
+                        int startPixelIndex = frame*pixelsPerFrame;
+                        int endPixelIndex = Math.Min (pixelsCount, (frame + 1) * pixelsPerFrame);
 
-                        for (int lookupIndex = 0; lookupIndex < lookupsCount; lookupIndex++)
+                        for (int pixelIndex = startPixelIndex; pixelIndex < endPixelIndex; pixelIndex++)
                         {
-                            Lookup lookup = lookups.Lookups[lookupIndex];
-                            var deltaAlpha = pixel.Alpha - lookup.Alpha;
-                            var deltaRed = pixel.Red - lookup.Red;
-                            var deltaGreen = pixel.Green - lookup.Green;
-                            var deltaBlue = pixel.Blue - lookup.Blue;
+                            Pixel pixel = pixels[pixelIndex];
 
-                            int distance = deltaAlpha*deltaAlpha + deltaRed*deltaRed + deltaGreen*deltaGreen + deltaBlue*deltaBlue;
+                            palette.PixelIndex[pixelIndex] = -1;
+                            if (pixel.Alpha <= alphaThreshold)
+                                return;
 
-                            if (distance >= bestDistance)
-                                continue;
+                            int bestMatch;
+                            int argb = pixel.Argb;
 
-                            bestDistance = distance;
-                            bestMatch = lookupIndex;
+                            if (!cachedMaches.TryGetValue(argb, out bestMatch))
+                            {
+                                int match = data.QuantizedPixels[pixelIndex];
+                                bestMatch = match;
+                                int bestDistance = int.MaxValue;
+
+                                for (int lookupIndex = 0; lookupIndex < lookupsCount; lookupIndex++)
+                                {
+                                    Lookup lookup = lookups.Lookups[lookupIndex];
+                                    var deltaAlpha = pixel.Alpha - lookup.Alpha;
+                                    var deltaRed = pixel.Red - lookup.Red;
+                                    var deltaGreen = pixel.Green - lookup.Green;
+                                    var deltaBlue = pixel.Blue - lookup.Blue;
+
+                                    int distance = deltaAlpha*deltaAlpha + deltaRed*deltaRed + deltaGreen*deltaGreen + deltaBlue*deltaBlue;
+
+                                    if (distance >= bestDistance)
+                                        continue;
+
+                                    bestDistance = distance;
+                                    bestMatch = lookupIndex;
+                                }
+
+                                cachedMaches[argb] = bestMatch;
+                            }
+
+                            palette.PixelIndex[pixelIndex] = bestMatch;
+
+                            Interlocked.Add(ref alphas[bestMatch], pixel.Alpha);
+                            Interlocked.Add(ref reds[bestMatch], pixel.Red);
+                            Interlocked.Add(ref greens[bestMatch], pixel.Green);
+                            Interlocked.Add(ref blues[bestMatch], pixel.Blue);
+                            Interlocked.Increment(ref sums[bestMatch]);
                         }
-
-                        palette.PixelIndex[pixelIndex] = bestMatch;
-
-                        Interlocked.Add(ref alphas[bestMatch], pixel.Alpha);
-                        Interlocked.Add(ref reds[bestMatch], pixel.Red);
-                        Interlocked.Add(ref greens[bestMatch], pixel.Green);
-                        Interlocked.Add(ref blues[bestMatch], pixel.Blue);
-                        Interlocked.Increment(ref sums[bestMatch]);
                     });
 
             for (var paletteIndex = 0; paletteIndex < colorCount; paletteIndex++)
