@@ -41,7 +41,7 @@ namespace nQuant
                 targetPath = sourcePath.Substring(0, lastDot) + "-quant.png";
             }
             
-            var quantizer = new WuQuantizerParallel();
+            var quantizer = new WuQuantizer();
             using(var bitmap = new Bitmap(sourcePath))
             {
                 try
