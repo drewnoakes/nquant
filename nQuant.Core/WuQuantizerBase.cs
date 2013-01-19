@@ -141,8 +141,9 @@ namespace nQuant
                                                                                               (value[Blue]*value[Blue]);
                         }
 
-                        colorData.QuantizedPixels.Add(BitConverter.ToInt32(new[] { indexAlpha, indexRed, indexGreen, indexBlue }, 0));
-                        colorData.AddPixel(new Pixel(value[Alpha], value[Red], value[Green], value[Blue]));
+                        colorData.AddPixel(
+                            new Pixel(value[Alpha], value[Red], value[Green], value[Blue]),
+                            BitConverter.ToInt32 (new[] { indexAlpha, indexRed, indexGreen, indexBlue }, 0));
                         index += bitDepth;
                     }
 

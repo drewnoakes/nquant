@@ -39,6 +39,7 @@ namespace nQuant
 
             Parallel.ForEach(
                 data.Pixels,
+                parallelOptions,
                 (pixel, state, pixelIndex) =>
                     {
                         palette.PixelIndex[pixelIndex] = -1;
