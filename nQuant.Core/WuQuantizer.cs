@@ -8,7 +8,7 @@ namespace nQuant
     {
         protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold)
         {
-            var imageSize = data.Pixels.Count;
+            int imageSize = data.PixelsCount;
             LookupData lookups = BuildLookups(cubes, data);
 
             for(var index = 0; index < imageSize; ++index)
@@ -24,7 +24,7 @@ namespace nQuant
             var sums = new int[colorCount + 1];
             var palette = new QuantizedPalette(imageSize);
 
-            int pixelsCount = data.Pixels.Count;
+            int pixelsCount = data.PixelsCount;
             int lookupsCount = lookups.Lookups.Count;
 
             for (int pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)

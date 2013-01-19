@@ -8,9 +8,18 @@ namespace nQuant
 {
     public class WuQuantizerParallel : WuQuantizerBase, IWuQuantizer
     {
+        public WuQuantizerParallel()
+        {
+        }
+
+        public WuQuantizerParallel(ParallelOptions parallelOptions)
+        {
+            this.parallelOptions = parallelOptions;
+        }
+
         protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold)
         {
-            var imageSize = data.Pixels.Count;
+            int imageSize = data.PixelsCount;
             LookupData lookups = BuildLookups(cubes, data);
 
             for (var index = 0; index < imageSize; ++index)
@@ -84,5 +93,7 @@ namespace nQuant
 
             return palette;
         }
+
+        private ParallelOptions parallelOptions = new ParallelOptions();
     }
 }

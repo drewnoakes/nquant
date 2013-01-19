@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 
 namespace nQuant
 {
     public class ColorData
     {
-        public ColorData(int dataGranularity)
+        public ColorData(int dataGranularity, int bitmapWidth, int bitmapHeight)
         {
             dataGranularity++;
             Weights = new long[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
@@ -14,7 +15,9 @@ namespace nQuant
             MomentsBlue = new long[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
             Moments = new float[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
             QuantizedPixels = new List<int>();
-            Pixels = new List<Pixel>();
+
+            pixelsCount = bitmapWidth*bitmapHeight;
+            pixels = new Pixel[pixelsCount];
         }
 
         public long[, , ,] Weights { get; private set; }
@@ -24,6 +27,17 @@ namespace nQuant
         public long[, , ,] MomentsBlue { get; private set; }
         public float[, , ,] Moments { get; private set; }
         public IList<int> QuantizedPixels { get; private set; }
-        public IList<Pixel> Pixels { get; private set; }
+        
+        public IList<Pixel> Pixels { get { return pixels; } }
+
+        public int PixelsCount { get { return pixels.Length; } }
+        public void AddPixel(Pixel pixel)
+        {
+            pixels[pixelFillingCounter++] = pixel;
+        }
+
+        private Pixel[] pixels;
+        private int pixelsCount;
+        private int pixelFillingCounter;
     }
 }

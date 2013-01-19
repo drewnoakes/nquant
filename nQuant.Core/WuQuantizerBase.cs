@@ -84,9 +84,14 @@ namespace nQuant
 
         private static ColorData BuildHistogram(Bitmap sourceImage, int alphaThreshold, int alphaFader)
         {
-            var data = sourceImage.LockBits(Rectangle.FromLTRB(0, 0, sourceImage.Width, sourceImage.Height),
-                                            ImageLockMode.ReadOnly, sourceImage.PixelFormat);
-            var colorData = new ColorData(MaxSideIndex);
+            int bitmapWidth = sourceImage.Width;
+            int bitmapHeight = sourceImage.Height;
+
+            BitmapData data = sourceImage.LockBits(
+                Rectangle.FromLTRB(0, 0, bitmapWidth, bitmapHeight),
+                ImageLockMode.ReadOnly, 
+                sourceImage.PixelFormat);
+            ColorData colorData = new ColorData(MaxSideIndex, bitmapWidth, bitmapHeight);
 
             try
             {
@@ -100,10 +105,11 @@ namespace nQuant
                 var value = new Byte[byteCount];
 
                 Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
-                for (int y = 0; y < sourceImage.Height; y++)
+               
+                for (int y = 0; y < bitmapHeight; y++)
                 {
                     var index = 0;
-                    for (int x = 0; x < sourceImage.Width; x++)
+                    for (int x = 0; x < bitmapWidth; x++)
                     {
                         var indexOffset = index >> 3;
 
@@ -136,9 +142,10 @@ namespace nQuant
                         }
 
                         colorData.QuantizedPixels.Add(BitConverter.ToInt32(new[] { indexAlpha, indexRed, indexGreen, indexBlue }, 0));
-                        colorData.Pixels.Add(new Pixel(value[Alpha], value[Red], value[Green], value[Blue]));
+                        colorData.AddPixel(new Pixel(value[Alpha], value[Red], value[Green], value[Blue]));
                         index += bitDepth;
                     }
+
                     offset += byteLength;
                 }
             }
