@@ -8,11 +8,14 @@ namespace nQuant
             Red = red;
             Green = green;
             Blue = blue;
+
+            Argb = alpha << 24 | red << 16 | green << 8 | blue;
         }
 
         public byte Alpha;
         public byte Red;
         public byte Green;
         public byte Blue;
+        public int Argb;
     }
 }

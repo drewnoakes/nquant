@@ -27,6 +27,8 @@ namespace nQuant
             int pixelsCount = data.PixelsCount;
             int lookupsCount = lookups.Lookups.Count;
 
+            Dictionary<int, int> cachedMaches = new Dictionary<int, int>();
+
             for (int pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)
             {
                 Pixel pixel = data.Pixels[pixelIndex];
@@ -34,25 +36,33 @@ namespace nQuant
                 if (pixel.Alpha <= alphaThreshold)
                     continue;
 
-                int match = data.QuantizedPixels[pixelIndex];
-                int bestMatch = match;
-                int bestDistance = int.MaxValue;
+                int bestMatch;
+                int argb = pixel.Argb;
 
-                for (int lookupIndex = 0; lookupIndex < lookupsCount; lookupIndex++)
+                if (!cachedMaches.TryGetValue(argb, out bestMatch))
                 {
-                    Lookup lookup = lookups.Lookups[lookupIndex];
-                    var deltaAlpha = pixel.Alpha - lookup.Alpha;
-                    var deltaRed = pixel.Red - lookup.Red;
-                    var deltaGreen = pixel.Green - lookup.Green;
-                    var deltaBlue = pixel.Blue - lookup.Blue;
+                    int match = data.QuantizedPixels[pixelIndex];
+                    bestMatch = match;
+                    int bestDistance = int.MaxValue;
 
-                    int distance = deltaAlpha*deltaAlpha + deltaRed*deltaRed + deltaGreen*deltaGreen + deltaBlue*deltaBlue;
+                    for (int lookupIndex = 0; lookupIndex < lookupsCount; lookupIndex++)
+                    {
+                        Lookup lookup = lookups.Lookups[lookupIndex];
+                        var deltaAlpha = pixel.Alpha - lookup.Alpha;
+                        var deltaRed = pixel.Red - lookup.Red;
+                        var deltaGreen = pixel.Green - lookup.Green;
+                        var deltaBlue = pixel.Blue - lookup.Blue;
 
-                    if (distance >= bestDistance) 
-                        continue;
+                        int distance = deltaAlpha*deltaAlpha + deltaRed*deltaRed + deltaGreen*deltaGreen + deltaBlue*deltaBlue;
 
-                    bestDistance = distance;
-                    bestMatch = lookupIndex;
+                        if (distance >= bestDistance)
+                            continue;
+
+                        bestDistance = distance;
+                        bestMatch = lookupIndex;
+                    }
+
+                    cachedMaches[argb] = bestMatch;
                 }
 
                 alphas[bestMatch] += pixel.Alpha;
