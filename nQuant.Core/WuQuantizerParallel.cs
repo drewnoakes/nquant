@@ -37,7 +37,8 @@ namespace nQuant
             var sums = new int[colorCount + 1];
             var palette = new QuantizedPalette(pixelsCount);
 
-            int lookupsCount = lookups.Lookups.Count;
+            IList<Lookup> lookupsList = lookups.Lookups;
+            int lookupsCount = lookupsList.Count;
 
             // split processing into batches 
             int parallels = parallelOptions.MaxDegreeOfParallelism > 0 ? parallelOptions.MaxDegreeOfParallelism : Environment.ProcessorCount;
@@ -53,6 +54,12 @@ namespace nQuant
                 frame =>
                     {
                         Dictionary<int, int> cachedMaches = new Dictionary<int, int> ();
+
+                        int[] alphasLocal = new int[colorCount + 1];
+                        int[] redsLocal = new int[colorCount + 1];
+                        int[] greensLocal = new int[colorCount + 1];
+                        int[] bluesLocal = new int[colorCount + 1];
+                        int[] sumsLocal = new int[colorCount + 1];
 
                         int startPixelIndex = frame*pixelsPerFrame;
                         int endPixelIndex = Math.Min (pixelsCount, (frame + 1) * pixelsPerFrame);
@@ -76,7 +83,7 @@ namespace nQuant
 
                                 for (int lookupIndex = 0; lookupIndex < lookupsCount; lookupIndex++)
                                 {
-                                    Lookup lookup = lookups.Lookups[lookupIndex];
+                                    Lookup lookup = lookupsList[lookupIndex];
                                     var deltaAlpha = pixel.Alpha - lookup.Alpha;
                                     var deltaRed = pixel.Red - lookup.Red;
                                     var deltaGreen = pixel.Green - lookup.Green;
@@ -94,13 +101,30 @@ namespace nQuant
                                 cachedMaches[argb] = bestMatch;
                             }
 
-                            palette.PixelIndex[pixelIndex] = bestMatch;
+                            alphasLocal[bestMatch] += pixel.Alpha;
+                            redsLocal[bestMatch] += pixel.Red;
+                            greensLocal[bestMatch] += pixel.Green;
+                            bluesLocal[bestMatch] += pixel.Blue;
+                            sumsLocal[bestMatch]++;
 
-                            Interlocked.Add(ref alphas[bestMatch], pixel.Alpha);
-                            Interlocked.Add(ref reds[bestMatch], pixel.Red);
-                            Interlocked.Add(ref greens[bestMatch], pixel.Green);
-                            Interlocked.Add(ref blues[bestMatch], pixel.Blue);
-                            Interlocked.Increment(ref sums[bestMatch]);
+                            palette.PixelIndex[pixelIndex] = bestMatch;
+                        }
+
+                        lock (this)
+                        {
+                            for (int i = 0; i < colorCount + 1; i++)
+                            {
+                                alphas[i] += alphasLocal[i];
+                                reds[i] += redsLocal[i];
+                                greens[i] += greensLocal[i];
+                                blues[i] += bluesLocal[i];
+                                sums[i] += sumsLocal[i];
+                                //Interlocked.Add(ref alphas[i], alphasLocal[i]);
+                                //Interlocked.Add(ref reds[i], redsLocal[i]);
+                                //Interlocked.Add(ref greens[i], greensLocal[i]);
+                                //Interlocked.Add(ref blues[i], bluesLocal[i]);
+                                //Interlocked.Add(ref sums[i], sumsLocal[i]);
+                            }
                         }
                     });
 

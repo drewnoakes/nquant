@@ -25,7 +25,8 @@ namespace nQuant
             var palette = new QuantizedPalette(imageSize);
 
             int pixelsCount = data.PixelsCount;
-            int lookupsCount = lookups.Lookups.Count;
+            IList<Lookup> lookupsList = lookups.Lookups;
+            int lookupsCount = lookupsList.Count;
 
             Dictionary<int, int> cachedMaches = new Dictionary<int, int>();
 
@@ -47,7 +48,7 @@ namespace nQuant
 
                     for (int lookupIndex = 0; lookupIndex < lookupsCount; lookupIndex++)
                     {
-                        Lookup lookup = lookups.Lookups[lookupIndex];
+                        Lookup lookup = lookupsList[lookupIndex];
                         var deltaAlpha = pixel.Alpha - lookup.Alpha;
                         var deltaRed = pixel.Red - lookup.Red;
                         var deltaGreen = pixel.Green - lookup.Green;
