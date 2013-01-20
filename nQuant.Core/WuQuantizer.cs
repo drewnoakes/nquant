@@ -11,10 +11,11 @@ namespace nQuant
             int imageSize = data.PixelsCount;
             LookupData lookups = BuildLookups(cubes, data);
 
-            for(var index = 0; index < imageSize; ++index)
+            IList<int> quantizedPixels = data.QuantizedPixels;
+            for (var index = 0; index < imageSize; ++index)
             {
-                var indexParts = BitConverter.GetBytes(data.QuantizedPixels[index]);
-                data.QuantizedPixels[index] = lookups.Tags[indexParts[Alpha], indexParts[Red], indexParts[Green], indexParts[Blue]];
+                var indexParts = BitConverter.GetBytes(quantizedPixels[index]);
+                quantizedPixels[index] = lookups.Tags[indexParts[Alpha], indexParts[Red], indexParts[Green], indexParts[Blue]];
             }
 
             var alphas = new int[colorCount + 1];
@@ -24,6 +25,7 @@ namespace nQuant
             var sums = new int[colorCount + 1];
             var palette = new QuantizedPalette(imageSize);
 
+            IList<Pixel> pixels = data.Pixels;
             int pixelsCount = data.PixelsCount;
             IList<Lookup> lookupsList = lookups.Lookups;
             int lookupsCount = lookupsList.Count;
@@ -32,7 +34,7 @@ namespace nQuant
 
             for (int pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)
             {
-                Pixel pixel = data.Pixels[pixelIndex];
+                Pixel pixel = pixels[pixelIndex];
                 palette.PixelIndex[pixelIndex] = -1;
                 if (pixel.Alpha <= alphaThreshold)
                     continue;
@@ -42,7 +44,7 @@ namespace nQuant
 
                 if (!cachedMaches.TryGetValue(argb, out bestMatch))
                 {
-                    int match = data.QuantizedPixels[pixelIndex];
+                    int match = quantizedPixels[pixelIndex];
                     bestMatch = match;
                     int bestDistance = int.MaxValue;
 

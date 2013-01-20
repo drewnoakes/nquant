@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
@@ -8,12 +9,13 @@ namespace nQuant.Tests
 {
     public class BasicTests
     {
-        [Test]
-        public void OptimizeTest()
+        [TestCase("topo.png")]
+        [TestCase("tile.png")]
+        public void OptimizePngTest(string pngFileName)
         {
             const int Runs = 1;
 
-            using (Bitmap bitmap = (Bitmap)Bitmap.FromFile (@"../../../samples/topo.png"))
+            using (Bitmap bitmap = (Bitmap)Bitmap.FromFile (Path.Combine(@"../../../samples", pngFileName)))
             {
                 int alphaTransparency = 0;
                 int alphaFader = 0;

@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace nQuant
 {
+    /// <summary>
+    /// An experimental implementation of <see cref="IWuQuantizer"/> that uses thread parallelization.
+    /// Note: it actually doesn't run much faster than the non-parallel <see cref="WuQuantizer"/>, so the 
+    /// <see cref="WuQuantizer"/> is still recommended, especially for smaller bitmaps.
+    /// </summary>
     public class WuQuantizerParallel : WuQuantizerBase, IWuQuantizer
     {
         public WuQuantizerParallel()
@@ -19,15 +24,18 @@ namespace nQuant
 
         protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold)
         {
+            //Debug.WriteLine ("GetQuantizedPalette start...");
+
             int pixelsCount = data.PixelsCount;
             IList<Pixel> pixels = data.Pixels;
 
             LookupData lookups = BuildLookups(cubes, data);
 
+            IList<int> quantizedPixels = data.QuantizedPixels;
             for (var index = 0; index < pixelsCount; ++index)
             {
-                var indexParts = BitConverter.GetBytes(data.QuantizedPixels[index]);
-                data.QuantizedPixels[index] = lookups.Tags[indexParts[Alpha], indexParts[Red], indexParts[Green], indexParts[Blue]];
+                var indexParts = BitConverter.GetBytes(quantizedPixels[index]);
+                quantizedPixels[index] = lookups.Tags[indexParts[Alpha], indexParts[Red], indexParts[Green], indexParts[Blue]];
             }
 
             var alphas = new int[colorCount + 1];
@@ -47,6 +55,8 @@ namespace nQuant
             pixelsPerFrame = Math.Max (10000, pixelsPerFrame);
             int totalFrames = (int)Math.Ceiling (((double)pixelsCount) / pixelsPerFrame);
 
+            //Debug.WriteLine ("Start parallel...");
+
             Parallel.For(
                 0,
                 totalFrames,
@@ -64,6 +74,8 @@ namespace nQuant
                         int startPixelIndex = frame*pixelsPerFrame;
                         int endPixelIndex = Math.Min (pixelsCount, (frame + 1) * pixelsPerFrame);
 
+                        //Debug.WriteLine ("Parallel {0} ({1} pixels)...", Thread.CurrentThread.ManagedThreadId, endPixelIndex - startPixelIndex);
+
                         for (int pixelIndex = startPixelIndex; pixelIndex < endPixelIndex; pixelIndex++)
                         {
                             Pixel pixel = pixels[pixelIndex];
@@ -77,7 +89,7 @@ namespace nQuant
 
                             if (!cachedMaches.TryGetValue(argb, out bestMatch))
                             {
-                                int match = data.QuantizedPixels[pixelIndex];
+                                int match = quantizedPixels[pixelIndex];
                                 bestMatch = match;
                                 int bestDistance = int.MaxValue;
 
@@ -110,22 +122,26 @@ namespace nQuant
                             palette.PixelIndex[pixelIndex] = bestMatch;
                         }
 
-                        lock (this)
+                        //Debug.WriteLine ("Parallel {0} lock...", Thread.CurrentThread.ManagedThreadId);
+
+                        //lock (this)
                         {
                             for (int i = 0; i < colorCount + 1; i++)
                             {
-                                alphas[i] += alphasLocal[i];
-                                reds[i] += redsLocal[i];
-                                greens[i] += greensLocal[i];
-                                blues[i] += bluesLocal[i];
-                                sums[i] += sumsLocal[i];
-                                //Interlocked.Add(ref alphas[i], alphasLocal[i]);
-                                //Interlocked.Add(ref reds[i], redsLocal[i]);
-                                //Interlocked.Add(ref greens[i], greensLocal[i]);
-                                //Interlocked.Add(ref blues[i], bluesLocal[i]);
-                                //Interlocked.Add(ref sums[i], sumsLocal[i]);
+                                //alphas[i] += alphasLocal[i];
+                                //reds[i] += redsLocal[i];
+                                //greens[i] += greensLocal[i];
+                                //blues[i] += bluesLocal[i];
+                                //sums[i] += sumsLocal[i];
+                                Interlocked.Add (ref alphas[i], alphasLocal[i]);
+                                Interlocked.Add (ref reds[i], redsLocal[i]);
+                                Interlocked.Add (ref greens[i], greensLocal[i]);
+                                Interlocked.Add (ref blues[i], bluesLocal[i]);
+                                Interlocked.Add (ref sums[i], sumsLocal[i]);
                             }
                         }
+
+                        //Debug.WriteLine ("Parallel {0} finish...", Thread.CurrentThread.ManagedThreadId);
                     });
 
             for (var paletteIndex = 0; paletteIndex < colorCount; paletteIndex++)
