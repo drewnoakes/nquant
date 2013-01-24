@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Drawing.Imaging;
 using System.Reflection;
 
@@ -13,7 +10,6 @@ namespace nQuant
     {
         private static int alphaTransparency = 10;
         private static int alphaFader = 70;
-        private static string sourcePath = string.Empty;
         private static string targetPath = string.Empty;
 
         public static void Main(string[] args)

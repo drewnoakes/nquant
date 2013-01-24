@@ -1,35 +1,35 @@
 $psake.use_exit_on_error = $true
 properties {
     $currentDir = resolve-path .
-    $Invocation = (Get-Variable MyInvocation -Scope 1).Value
-    $baseDir = Split-Path -parent $Invocation.MyCommand.Definition | split-path -parent | split-path -parent | split-path -parent
+    $baseDir = $psake.build_script_dir
     $configuration = "debug"
 	$filesDir = "$baseDir\BuildFiles"
 	$version = "0.9." + (hg log --template '{rev}:{node}\n' | measure-object).Count
-	$projectFiles = "$baseDir\nQuantShell\nQuant.csproj", "$baseDir\nQuant.Core\nQuant.Core.csproj"
+	$nugetDir = "$baseDir\.NuGet"
 }
 
 task Debug -depends Default
-task Default -depends Revert-Projects, Clean-Solution, Build-Solution
-task BuildNet35 -depends Setup-35-Projects, Clean-Solution, Build-Solution, Revert-Projects
-task Download -depends Setup-40-Projects, Clean-Solution, Update-AssemblyInfoFiles, Build-Solution, Build-Output, Revert-Projects
-task Reset -depends Revert-Projects
+task Default -depends Clean-Solution, Build-Solution, Test-Solution
+task Download -depends Clean-Solution, Update-AssemblyInfoFiles, Build-Output
 
-task Setup-35-Projects {
-	Change-Framework-Version $projectFiles '3.5'
+task Test-Solution -depends Build-Solution {
+	$runnerDir = ([array](dir $baseDir\packages\xunit.runners.*))[-1];
+    exec { .$runnerDir\tools\xunit.console.clr4.exe "nquant.Facts\bin\$configuration\nquant.Facts.dll" }
 }
 
-task Setup-40-Projects {
-	Change-Framework-Version $projectFiles '4.0'
-}
-
-task Revert-Projects {
-	Change-Framework-Version $projectFiles '4.0'
-	Change-OutputPath $projectFiles
+task Build-35-Solution {
+  $conf = $configuration+35
+  exec { msbuild 'nquant.core\nquant.core.csproj' /maxcpucount /t:Build /v:Minimal /p:Configuration=$conf }
+  exec { msbuild 'nquantshell\nquant.csproj' /maxcpucount /t:Build /v:Minimal /p:Configuration=$conf }
 }
 
 task Clean-Solution -depends Clean-BuildFiles {
+	$conf = $configuration+35
+    clean $baseDir\nquant.core\Nuget\Lib
+	create $baseDir\nquant.core\Nuget\Lib
     exec { msbuild nQuant.sln /t:Clean /v:quiet }
+	exec { msbuild 'nQuant.core\nquant.core.csproj' /t:Clean /v:quiet /p:Configuration=$conf }
+	exec { msbuild 'nQuantShell\nQuant.csproj' /t:Clean /v:quiet /p:Configuration=$conf }
 }
 
 task Update-AssemblyInfoFiles {
@@ -37,7 +37,7 @@ task Update-AssemblyInfoFiles {
 	Update-AssemblyInfoFiles $version $commit
 }
 
-task Build-Solution {
+task Build-Solution -depends Build-35-Solution {
     exec { msbuild nQuant.sln /maxcpucount /t:Build /v:Minimal /p:Configuration=$configuration }
 }
 
@@ -46,10 +46,11 @@ task Clean-BuildFiles {
 }
 
 task Push-Nuget {
-	exec { .\Tools\nuget.exe push $filesDir\nQuant.$version.nupkg }
+	$pkg = Get-Item -path $filesDir/nquant.0.*.*.nupkg
+	exec { .$nugetDir\nuget.exe push $filesDir\$($pkg.Name) }
 }
 
-task Build-Output {
+task Build-Output -depends Build-Solution {
 	clean $baseDir\nquant.core\Nuget\Lib
 	create $baseDir\nquant.core\Nuget\Lib\net20
 	create $baseDir\nquant.core\Nuget\Lib\net40
@@ -62,9 +63,6 @@ task Build-Output {
 	Copy-Item $baseDir\nquantShell\bin\v4.0\$configuration\*.* $baseDir\nquant.core\Nuget\Tools\net40
 	clean $filesDir
 	create $filesDir
-    $Spec = [xml](get-content "nQuant.core\Nuget\nQuant.nuspec")
-    $Spec.package.metadata.version = $version
-    $Spec.Save("nQuant.core\Nuget\nQuant.nuspec")
 	create $filesDir\net35
 	create $filesDir\net40
 	Copy-Item $baseDir\nquantShell\bin\v3.5\$configuration\*.* $filesDir\net35
@@ -73,12 +71,7 @@ task Build-Output {
 	cd $filesDir
 	exec { ..\Tools\zip.exe -9 -r nQuant-$version.zip . }
 	cd $currentDir
-    exec { .\Tools\nuget.exe pack "nQuant.core\Nuget\nQuant.nuspec" -o $filesDir }
-}
-
-function roboexec([scriptblock]$cmd) {
-    & $cmd | out-null
-    if ($lastexitcode -eq 0) { throw "No files were copied for command: " + $cmd }
+    exec { .$nugetDir\nuget.exe pack "nQuant.core\Nuget\nQuant.nuspec" -o $filesDir -version $version }
 }
 
 function clean($path) {
@@ -117,24 +110,4 @@ function Update-AssemblyInfoFiles ([string] $version, [string] $commit) {
 			% {$_ -replace $fileCommitPattern, $commitVersion }
         } | Set-Content $filename
     }
-}
-
-function Change-Framework-Version ([string[]] $projFiles, [string] $frameworkVersion) {
-	foreach ($projFile in $projFiles) {	
-		$content = [xml] (get-content $projFile)
-		$content.Project.SetAttribute("ToolsVersion", $frameworkVersion)
-		$content.Project.PropertyGroup[0].TargetFrameworkVersion = "v$frameworkVersion"
-		$content.Project.PropertyGroup[1].OutputPath = "bin\v$frameworkVersion\Debug\"
-		$content.Project.PropertyGroup[2].OutputPath = "bin\v$frameworkVersion\Release\"
-		$content.Save($projFile)
-	}
-}
-
-function Change-OutputPath ([string[]] $projFiles) {
-	foreach ($projFile in $projFiles) {	
-		$content = [xml] (get-content $projFile)
-		$content.Project.PropertyGroup[1].OutputPath = "bin\Debug\"
-		$content.Project.PropertyGroup[2].OutputPath = "bin\Release\"
-		$content.Save($projFile)
-	}
 }
