@@ -7,6 +7,7 @@
     <owners>Matt Wrock</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
     <projectUrl>http://nquant.codeplex.com/</projectUrl>
+    <iconUrl>http://download-codeplex.sec.s-msft.com/Download?ProjectName=nquant&DownloadId=609205&Build=20006</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       nQuant is a .net color quantizer that can dramatically reduce the size of images with little to no perceptible quality loss.
