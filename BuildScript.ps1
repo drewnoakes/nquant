@@ -4,7 +4,7 @@ properties {
     $baseDir = $psake.build_script_dir
     $configuration = "debug"
 	$filesDir = "$baseDir\BuildFiles"
-	$version = "0.9." + (hg log --template '{rev}:{node}\n' | measure-object).Count
+	$version = "1.0." + (hg log -r "last(tagged())::" --template '{rev}:{node}\n' | measure-object).Count
 	$nugetDir = "$baseDir\.NuGet"
 }
 
