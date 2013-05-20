@@ -17,7 +17,7 @@ namespace nQuant
 
             pixelsCount = bitmapWidth*bitmapHeight;
             pixels = new Pixel[pixelsCount];
-            quantizedPixels = new int[pixelsCount];
+            quantizedPixels = new Pixel[pixelsCount];
         }
 
         public long[, , ,] Weights { get; private set; }
@@ -27,18 +27,18 @@ namespace nQuant
         public long[, , ,] MomentsBlue { get; private set; }
         public float[, , ,] Moments { get; private set; }
 
-        public IList<int> QuantizedPixels { get { return quantizedPixels; } }
+        public Pixel[] QuantizedPixels { get { return quantizedPixels; } }
         public IList<Pixel> Pixels { get { return pixels; } }
 
         public int PixelsCount { get { return pixels.Length; } }
-        public void AddPixel(Pixel pixel, int quantizedPixel)
+        public void AddPixel(Pixel pixel, Pixel quantizedPixel)
         {
             pixels[pixelFillingCounter] = pixel;
             quantizedPixels[pixelFillingCounter++] = quantizedPixel;
         }
 
         private Pixel[] pixels;
-        private int[] quantizedPixels;
+        private Pixel[] quantizedPixels;
         private int pixelsCount;
         private int pixelFillingCounter;
     }

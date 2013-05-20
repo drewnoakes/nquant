@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 
 namespace nQuant
@@ -11,11 +10,11 @@ namespace nQuant
             int imageSize = data.PixelsCount;
             LookupData lookups = BuildLookups(cubes, data);
 
-            IList<int> quantizedPixels = data.QuantizedPixels;
+            var quantizedPixels = data.QuantizedPixels;
             for (var index = 0; index < imageSize; ++index)
             {
-                var indexParts = BitConverter.GetBytes(quantizedPixels[index]);
-                quantizedPixels[index] = lookups.Tags[indexParts[Alpha], indexParts[Red], indexParts[Green], indexParts[Blue]];
+                Pixel quantizedPixel = quantizedPixels[index];
+                quantizedPixels[index] = new Pixel(lookups.Tags[quantizedPixel.Alpha, quantizedPixel.Red, quantizedPixel.Green, quantizedPixel.Blue]);
             }
 
             var alphas = new int[colorCount + 1];
@@ -44,7 +43,7 @@ namespace nQuant
 
                 if (!cachedMaches.TryGetValue(argb, out bestMatch))
                 {
-                    int match = quantizedPixels[pixelIndex];
+                    int match = quantizedPixels[pixelIndex].Argb;
                     bestMatch = match;
                     int bestDistance = int.MaxValue;
 
