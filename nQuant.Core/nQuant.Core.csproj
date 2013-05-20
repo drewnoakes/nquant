@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="Box.cs" />
     <Compile Include="ColorData.cs" />
+    <Compile Include="ColorMoment.cs" />
     <Compile Include="CubeCut.cs" />
     <Compile Include="IWuQuantizer.cs" />
     <Compile Include="Lookup.cs" />

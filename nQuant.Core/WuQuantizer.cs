@@ -11,7 +11,7 @@ namespace nQuant
             LookupData lookups = BuildLookups(cubes, data);
 
             var quantizedPixels = data.QuantizedPixels;
-            for (var index = 0; index < imageSize; ++index)
+            for (var index = 0; index < quantizedPixels.Length; ++index)
             {
                 Pixel quantizedPixel = quantizedPixels[index];
                 quantizedPixels[index] = new Pixel(lookups.Tags[quantizedPixel.Alpha, quantizedPixel.Red, quantizedPixel.Green, quantizedPixel.Blue]);
@@ -24,9 +24,9 @@ namespace nQuant
             var sums = new int[colorCount + 1];
             var palette = new QuantizedPalette(imageSize);
 
-            IList<Pixel> pixels = data.Pixels;
+            var pixels = data.Pixels;
             int pixelsCount = data.PixelsCount;
-            IList<Lookup> lookupsList = lookups.Lookups;
+            var lookupsList = lookups.Lookups;
             int lookupsCount = lookupsList.Count;
 
             Dictionary<int, int> cachedMaches = new Dictionary<int, int>();
@@ -47,7 +47,7 @@ namespace nQuant
                     bestMatch = match;
                     int bestDistance = int.MaxValue;
 
-                    for (int lookupIndex = 0; lookupIndex < lookupsCount; lookupIndex++)
+                    for (int lookupIndex = 0; lookupIndex < lookupsList.Count; lookupIndex++)
                     {
                         Lookup lookup = lookupsList[lookupIndex];
                         var deltaAlpha = pixel.Alpha - lookup.Alpha;

@@ -52,11 +52,13 @@ namespace nQuant
                 var targetBuffer = new byte[targetSize];
                 var targetValue = new byte[targetByteCount];
                 var pixelIndex = 0;
+                var resultHeight = result.Height;
+                var resultWidth = result.Width;
 
-                for (var y = 0; y < result.Height; y++)
+                for (var y = 0; y < resultHeight; y++)
                 {
                     var targetIndex = 0;
-                    for (var x = 0; x < result.Width; x++)
+                    for (var x = 0; x < resultWidth; x++)
                     {
                         var targetIndexOffset = targetIndex >> 3;
                         targetValue[0] = (byte)(palette.PixelIndex[pixelIndex] == -1 ? palette.Colors.Count - 1 : palette.PixelIndex[pixelIndex]);
@@ -129,16 +131,16 @@ namespace nQuant
                                 value[Alpha] = (byte)(alpha > 255 ? 255 : alpha);
                                 indexAlpha = (byte)((value[Alpha] >> 3) + 1);
                             }
-
-                            colorData.Weights[indexAlpha, indexRed, indexGreen, indexBlue]++;
-                            colorData.MomentsRed[indexAlpha, indexRed, indexGreen, indexBlue] += value[Red];
-                            colorData.MomentsGreen[indexAlpha, indexRed, indexGreen, indexBlue] += value[Green];
-                            colorData.MomentsBlue[indexAlpha, indexRed, indexGreen, indexBlue] += value[Blue];
-                            colorData.MomentsAlpha[indexAlpha, indexRed, indexGreen, indexBlue] += value[Alpha];
-                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue] += (value[Alpha]*value[Alpha]) +
-                                                                                              (value[Red]*value[Red]) +
-                                                                                              (value[Green]*value[Green]) +
-                                                                                              (value[Blue]*value[Blue]);
+                            
+                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Alpha += value[Alpha];
+                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Red += value[Red];
+                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Green += value[Green];
+                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Blue += value[Blue];
+                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Weight++;
+                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Moment += (value[Alpha] * value[Alpha]) +
+                                                                                              (value[Red] * value[Red]) +
+                                                                                              (value[Green] * value[Green]) +
+                                                                                              (value[Blue] * value[Blue]);
                         }
 
                         colorData.AddPixel(
@@ -159,59 +161,22 @@ namespace nQuant
 
         private static ColorData CalculateMoments(ColorData data)
         {
+            var xarea = new ColorMoment[SideSize, SideSize, SideSize];
+            var area = new ColorMoment[SideSize];
             for (var alphaIndex = 1; alphaIndex <= MaxSideIndex; ++alphaIndex)
             {
-                var xarea = new long[SideSize, SideSize, SideSize];
-                var xareaAlpha = new long[SideSize, SideSize, SideSize];
-                var xareaRed = new long[SideSize, SideSize, SideSize];
-                var xareaGreen = new long[SideSize, SideSize, SideSize];
-                var xareaBlue = new long[SideSize, SideSize, SideSize];
-                var xarea2 = new float[SideSize, SideSize, SideSize];
                 for (var redIndex = 1; redIndex <= MaxSideIndex; ++redIndex)
                 {
-                    var area = new long[SideSize];
-                    var areaAlpha = new long[SideSize];
-                    var areaRed = new long[SideSize];
-                    var areaGreen = new long[SideSize];
-                    var areaBlue = new long[SideSize];
-                    var area2 = new float[SideSize];
+                    Array.Clear(area, 0, area.Length);
                     for (var greenIndex = 1; greenIndex <= MaxSideIndex; ++greenIndex)
                     {
-                        long line = 0;
-                        long lineAlpha = 0;
-                        long lineRed = 0;
-                        long lineGreen = 0;
-                        long lineBlue = 0;
-                        var line2 = 0.0f;
+                        ColorMoment line = new ColorMoment();
                         for (var blueIndex = 1; blueIndex <= MaxSideIndex; ++blueIndex)
                         {
-                            line += data.Weights[alphaIndex, redIndex, greenIndex, blueIndex];
-                            lineAlpha += data.MomentsAlpha[alphaIndex, redIndex, greenIndex, blueIndex];
-                            lineRed += data.MomentsRed[alphaIndex, redIndex, greenIndex, blueIndex];
-                            lineGreen += data.MomentsGreen[alphaIndex, redIndex, greenIndex, blueIndex];
-                            lineBlue += data.MomentsBlue[alphaIndex, redIndex, greenIndex, blueIndex];
-                            line2 += data.Moments[alphaIndex, redIndex, greenIndex, blueIndex];
-
+                            line += data.Moments[alphaIndex, redIndex, greenIndex, blueIndex];
                             area[blueIndex] += line;
-                            areaAlpha[blueIndex] += lineAlpha;
-                            areaRed[blueIndex] += lineRed;
-                            areaGreen[blueIndex] += lineGreen;
-                            areaBlue[blueIndex] += lineBlue;
-                            area2[blueIndex] += line2;
-
                             xarea[redIndex, greenIndex, blueIndex] = xarea[redIndex - 1, greenIndex, blueIndex] + area[blueIndex];
-                            xareaAlpha[redIndex, greenIndex, blueIndex] = xareaAlpha[redIndex - 1, greenIndex, blueIndex] + areaAlpha[blueIndex];
-                            xareaRed[redIndex, greenIndex, blueIndex] = xareaRed[redIndex - 1, greenIndex, blueIndex] + areaRed[blueIndex];
-                            xareaGreen[redIndex, greenIndex, blueIndex] = xareaGreen[redIndex - 1, greenIndex, blueIndex] + areaGreen[blueIndex];
-                            xareaBlue[redIndex, greenIndex, blueIndex] = xareaBlue[redIndex - 1, greenIndex, blueIndex] + areaBlue[blueIndex];
-                            xarea2[redIndex, greenIndex, blueIndex] = xarea2[redIndex - 1, greenIndex, blueIndex] + area2[blueIndex];
-
-                            data.Weights[alphaIndex, redIndex, greenIndex, blueIndex] = data.Weights[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[redIndex, greenIndex, blueIndex];
-                            data.MomentsAlpha[alphaIndex, redIndex, greenIndex, blueIndex] = data.MomentsAlpha[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaAlpha[redIndex, greenIndex, blueIndex];
-                            data.MomentsRed[alphaIndex, redIndex, greenIndex, blueIndex] = data.MomentsRed[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaRed[redIndex, greenIndex, blueIndex];
-                            data.MomentsGreen[alphaIndex, redIndex, greenIndex, blueIndex] = data.MomentsGreen[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaGreen[redIndex, greenIndex, blueIndex];
-                            data.MomentsBlue[alphaIndex, redIndex, greenIndex, blueIndex] = data.MomentsBlue[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaBlue[redIndex, greenIndex, blueIndex];
-                            data.Moments[alphaIndex, redIndex, greenIndex, blueIndex] = data.Moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea2[redIndex, greenIndex, blueIndex];
+                            data.Moments[alphaIndex, redIndex, greenIndex, blueIndex] = data.Moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[redIndex, greenIndex, blueIndex];
                         }
                     }
                 }
@@ -219,7 +184,7 @@ namespace nQuant
             return data;
         }
 
-        private static long Top(Box cube, int direction, int position, long[,,,] moment)
+        private static ColorMoment Top(Box cube, int direction, int position, ColorMoment[, , ,] moment)
         {
             switch (direction)
             {
@@ -264,11 +229,11 @@ namespace nQuant
                             moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMinimum, position]);
 
                 default:
-                    return 0;
+                    return new ColorMoment();
             }
         }
 
-        private static long Bottom(Box cube, int direction, long[,,,] moment)
+        private static ColorMoment Bottom(Box cube, int direction, ColorMoment[, , ,] moment)
         {
             switch (direction)
             {
@@ -313,44 +278,27 @@ namespace nQuant
                             moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMinimum, cube.BlueMinimum]);
 
                 default:
-                    return 0;
+                    return new ColorMoment();
             }
         }
 
-        private static CubeCut Maximize(ColorData data, Box cube, int direction, byte first, byte last, long wholeAlpha, long wholeRed, long wholeGreen, long wholeBlue, long wholeWeight)
+        private static CubeCut Maximize(ColorData data, Box cube, int direction, byte first, byte last, ColorMoment whole)
         {
-            var bottomAlpha = Bottom(cube, direction, data.MomentsAlpha);
-            var bottomRed = Bottom(cube, direction, data.MomentsRed);
-            var bottomGreen = Bottom(cube, direction, data.MomentsGreen);
-            var bottomBlue = Bottom(cube, direction, data.MomentsBlue);
-            var bottomWeight = Bottom(cube, direction, data.Weights);
-
+            var bottom = Bottom(cube, direction, data.Moments);
             var result = 0.0f;
             byte? cutPoint = null;
 
             for (var position = first; position < last; ++position)
             {
-                var halfAlpha = bottomAlpha + Top(cube, direction, position, data.MomentsAlpha);
-                var halfRed = bottomRed + Top(cube, direction, position, data.MomentsRed);
-                var halfGreen = bottomGreen + Top(cube, direction, position, data.MomentsGreen);
-                var halfBlue = bottomBlue + Top(cube, direction, position, data.MomentsBlue);
-                var halfWeight = bottomWeight + Top(cube, direction, position, data.Weights);
+                var half = bottom + Top(cube, direction, position, data.Moments);
+                if (half.Weight == 0) continue;
 
-                if (halfWeight == 0) continue;
+                var temp = half.WeightedDistance();
 
-                var halfDistance = halfAlpha * halfAlpha + halfRed * halfRed + halfGreen * halfGreen + halfBlue * halfBlue;
-                var temp = halfDistance / halfWeight;
-
-                halfAlpha = wholeAlpha - halfAlpha;
-                halfRed = wholeRed - halfRed;
-                halfGreen = wholeGreen - halfGreen;
-                halfBlue = wholeBlue - halfBlue;
-                halfWeight = wholeWeight - halfWeight;
-
-                if (halfWeight != 0)
+                half = whole - half;
+                if (half.Weight != 0)
                 {
-                    halfDistance = halfAlpha * halfAlpha + halfRed * halfRed + halfGreen * halfGreen + halfBlue * halfBlue;
-                    temp += halfDistance / halfWeight;
+                    temp += half.WeightedDistance();
 
                     if (temp > result)
                     {
@@ -366,16 +314,11 @@ namespace nQuant
         private bool Cut(ColorData data, ref Box first,ref Box second)
         {
             int direction;
-            var wholeAlpha = Volume(first, data.MomentsAlpha);
-            var wholeRed = Volume(first, data.MomentsRed);
-            var wholeGreen = Volume(first, data.MomentsGreen);
-            var wholeBlue = Volume(first, data.MomentsBlue);
-            var wholeWeight = Volume(first, data.Weights);
-
-            var maxAlpha = Maximize(data, first, Alpha, (byte) (first.AlphaMinimum + 1), first.AlphaMaximum, wholeAlpha, wholeRed, wholeGreen, wholeBlue, wholeWeight);
-            var maxRed = Maximize(data, first, Red, (byte) (first.RedMinimum + 1), first.RedMaximum, wholeAlpha, wholeRed, wholeGreen, wholeBlue, wholeWeight);
-            var maxGreen = Maximize(data, first, Green, (byte) (first.GreenMinimum + 1), first.GreenMaximum, wholeAlpha, wholeRed, wholeGreen, wholeBlue, wholeWeight);
-            var maxBlue = Maximize(data, first, Blue, (byte) (first.BlueMinimum + 1), first.BlueMaximum, wholeAlpha, wholeRed, wholeGreen, wholeBlue, wholeWeight);
+            var whole = Volume(first, data.Moments);
+            var maxAlpha = Maximize(data, first, Alpha, (byte)(first.AlphaMinimum + 1), first.AlphaMaximum, whole);
+            var maxRed = Maximize(data, first, Red, (byte)(first.RedMinimum + 1), first.RedMaximum, whole);
+            var maxGreen = Maximize(data, first, Green, (byte)(first.GreenMinimum + 1), first.GreenMaximum, whole);
+            var maxBlue = Maximize(data, first, Blue, (byte)(first.BlueMinimum + 1), first.BlueMaximum, whole);
 
             if ((maxAlpha.Value >= maxRed.Value) && (maxAlpha.Value >= maxGreen.Value) && (maxAlpha.Value >= maxBlue.Value))
             {
@@ -436,17 +379,8 @@ namespace nQuant
 
         private static float CalculateVariance(ColorData data, Box cube)
         {
-            float volumeAlpha = Volume(cube, data.MomentsAlpha);
-            float volumeRed = Volume(cube, data.MomentsRed);
-            float volumeGreen = Volume(cube, data.MomentsGreen);
-            float volumeBlue = Volume(cube, data.MomentsBlue);
-            float volumeMoment = VolumeFloat(cube, data.Moments);
-            float volumeWeight = Volume(cube, data.Weights);
-
-            float distance = volumeAlpha * volumeAlpha + volumeRed * volumeRed + volumeGreen * volumeGreen + volumeBlue * volumeBlue;
-
-            var result = volumeMoment - distance / volumeWeight;
-            return double.IsNaN(result) ? 0.0f : result;
+            ColorMoment volume = Volume(cube, data.Moments);
+            return volume.Variance();
         }
 
         private static long Volume(Box cube, long[,,,] moment)
@@ -471,6 +405,27 @@ namespace nQuant
         }
 
         private static float VolumeFloat(Box cube, float[,,,] moment)
+        {
+            return (moment[cube.AlphaMaximum, cube.RedMaximum, cube.GreenMaximum, cube.BlueMaximum] -
+                    moment[cube.AlphaMaximum, cube.RedMaximum, cube.GreenMinimum, cube.BlueMaximum] -
+                    moment[cube.AlphaMaximum, cube.RedMinimum, cube.GreenMaximum, cube.BlueMaximum] +
+                    moment[cube.AlphaMaximum, cube.RedMinimum, cube.GreenMinimum, cube.BlueMaximum] -
+                    moment[cube.AlphaMinimum, cube.RedMaximum, cube.GreenMaximum, cube.BlueMaximum] +
+                    moment[cube.AlphaMinimum, cube.RedMaximum, cube.GreenMinimum, cube.BlueMaximum] +
+                    moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMaximum, cube.BlueMaximum] -
+                    moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMinimum, cube.BlueMaximum]) -
+
+                   (moment[cube.AlphaMaximum, cube.RedMaximum, cube.GreenMaximum, cube.BlueMinimum] -
+                    moment[cube.AlphaMinimum, cube.RedMaximum, cube.GreenMaximum, cube.BlueMinimum] -
+                    moment[cube.AlphaMaximum, cube.RedMaximum, cube.GreenMinimum, cube.BlueMinimum] +
+                    moment[cube.AlphaMinimum, cube.RedMaximum, cube.GreenMinimum, cube.BlueMinimum] -
+                    moment[cube.AlphaMaximum, cube.RedMinimum, cube.GreenMaximum, cube.BlueMinimum] +
+                    moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMaximum, cube.BlueMinimum] +
+                    moment[cube.AlphaMaximum, cube.RedMinimum, cube.GreenMinimum, cube.BlueMinimum] -
+                    moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMinimum, cube.BlueMinimum]);
+        }
+
+        private static ColorMoment Volume(Box cube, ColorMoment[, , ,] moment)
         {
             return (moment[cube.AlphaMaximum, cube.RedMaximum, cube.GreenMaximum, cube.BlueMaximum] -
                     moment[cube.AlphaMaximum, cube.RedMaximum, cube.GreenMinimum, cube.BlueMaximum] -
@@ -552,16 +507,16 @@ namespace nQuant
                     }
                 }
 
-                var weight = Volume(cube, data.Weights);
+                var volume = Volume(cube, data.Moments);
 
-                if (weight <= 0) continue;
+                if (volume.Weight <= 0) continue;
 
                 var lookup = new Lookup
                     {
-                        Alpha = (int) (Volume(cube, data.MomentsAlpha)/weight),
-                        Red = (int) (Volume(cube, data.MomentsRed)/weight),
-                        Green = (int) (Volume(cube, data.MomentsGreen)/weight),
-                        Blue = (int) (Volume(cube, data.MomentsBlue)/weight)
+                        Alpha = (int)(volume.Alpha / volume.Weight),
+                        Red = (int)(volume.Red / volume.Weight),
+                        Green = (int)(volume.Green / volume.Weight),
+                        Blue = (int)(volume.Blue / volume.Weight)
                     };
                 lookups.Lookups.Add(lookup);
             }
