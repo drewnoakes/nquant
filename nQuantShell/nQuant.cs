@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Reflection;
 
 namespace nQuant
@@ -36,7 +37,8 @@ namespace nQuant
                     lastDot = sourcePath.Length;
                 targetPath = sourcePath.Substring(0, lastDot) + "-quant.png";
             }
-            
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
             var quantizer = new WuQuantizer();
             using(var bitmap = new Bitmap(sourcePath))
             {
@@ -52,7 +54,7 @@ namespace nQuant
                     Console.WriteLine(q.Message);
                 }
             }
-
+            Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
         }
 
         static private void ProcessArgs(string[] args)
