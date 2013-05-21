@@ -35,5 +35,10 @@ namespace nQuant
         public byte Blue;
         [FieldOffsetAttribute(0)]
         public int Argb;
+
+        public long Distance()
+        {
+            return (Alpha * Alpha) + (Red * Red) + (Green * Green) + (Blue * Blue);
+        }
     }
 }

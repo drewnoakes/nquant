@@ -47,6 +47,17 @@ namespace nQuant
             return c1;
         }
 
+        public static ColorMoment operator +(ColorMoment m, Pixel p)
+        {
+            m.Alpha += p.Alpha;
+            m.Red += p.Red;
+            m.Green += p.Green;
+            m.Blue += p.Blue;
+            m.Weight++;
+            m.Moment += p.Distance();
+            return m;
+        }
+
         public long Distance()
         {
             return Alpha * Alpha + Red * Red + Green * Green + Blue * Blue;

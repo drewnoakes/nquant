@@ -113,6 +113,7 @@ namespace nQuant
                         for (var valueIndex = 0; valueIndex < byteCount; valueIndex++)
                             value[valueIndex] = buffer[valueIndex + indexOffset];
 
+                        Pixel pixelValue = new Pixel(value[Alpha], value[Red], value[Green], value[Blue]);
                         var indexAlpha = (byte)((value[Alpha] >> 3) + 1);
                         var indexRed = (byte)((value[Red] >> 3) + 1);
                         var indexGreen = (byte)((value[Green] >> 3) + 1);
@@ -126,20 +127,12 @@ namespace nQuant
                                 value[Alpha] = (byte)(alpha > 255 ? 255 : alpha);
                                 indexAlpha = (byte)((value[Alpha] >> 3) + 1);
                             }
-                            
-                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Alpha += value[Alpha];
-                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Red += value[Red];
-                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Green += value[Green];
-                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Blue += value[Blue];
-                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Weight++;
-                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue].Moment += (value[Alpha] * value[Alpha]) +
-                                                                                              (value[Red] * value[Red]) +
-                                                                                              (value[Green] * value[Green]) +
-                                                                                              (value[Blue] * value[Blue]);
+
+                            colorData.Moments[indexAlpha, indexRed, indexGreen, indexBlue] += pixelValue;
                         }
 
                         colorData.AddPixel(
-                            new Pixel(value[Alpha], value[Red], value[Green], value[Blue]),
+                            pixelValue,
                             new Pixel(indexAlpha, indexRed, indexGreen, indexBlue));
                         index += bitDepth;
                     }
