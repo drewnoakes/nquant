@@ -10,6 +10,7 @@ namespace nQuant
     public abstract class WuQuantizerBase
     {
         private const int MaxColor = 256;
+        protected const byte AlphaColor = 255;
         protected const int Alpha = 3;
         protected const int Red = 2;
         protected const int Green = 1;
@@ -47,9 +48,7 @@ namespace nQuant
                 const byte targetBitDepth = 8;
                 var targetByteLength = targetData.Stride < 0 ? -targetData.Stride : targetData.Stride;
                 var targetByteCount = Math.Max(1, targetBitDepth >> 3);
-                var targetSize = targetByteLength * result.Height;
-                var targetOffset = 0;
-                var targetBuffer = new byte[targetSize];
+                var targetBuffer = new byte[targetByteLength];
                 var targetValue = new byte[targetByteCount];
                 var pixelIndex = 0;
                 var resultHeight = result.Height;
@@ -61,19 +60,17 @@ namespace nQuant
                     for (var x = 0; x < resultWidth; x++)
                     {
                         var targetIndexOffset = targetIndex >> 3;
-                        targetValue[0] = (byte)(palette.PixelIndex[pixelIndex] == -1 ? palette.Colors.Count - 1 : palette.PixelIndex[pixelIndex]);
+                        targetValue[0] = (byte)(palette.PixelIndex[pixelIndex] == AlphaColor ? palette.Colors.Count - 1 : palette.PixelIndex[pixelIndex]);
                         pixelIndex++;
 
                         for (var valueIndex = 0; valueIndex < targetByteCount; valueIndex++)
-                            targetBuffer[targetOffset + valueIndex + targetIndexOffset] = targetValue[valueIndex];
+                            targetBuffer[valueIndex + targetIndexOffset] = targetValue[valueIndex];
 
                         targetIndex += targetBitDepth;
                     }
 
-                    targetOffset += targetByteLength;
-                }
-
-                Marshal.Copy(targetBuffer, 0, targetData.Scan0, targetSize);
+                    Marshal.Copy(targetBuffer, 0, targetData.Scan0 + (targetByteLength * y), targetByteLength);
+                } 
             }
             finally
             {
@@ -102,21 +99,19 @@ namespace nQuant
                     throw new QuantizationException(string.Format("Thie image you are attempting to quantize does not contain a 32 bit ARGB palette. This image has a bit depth of {0} with {1} colors.", bitDepth, sourceImage.Palette.Entries.Length));
                 var byteLength = data.Stride < 0 ? -data.Stride : data.Stride;
                 var byteCount = Math.Max(1, bitDepth >> 3);
-                var offset = 0;
-                var buffer = new Byte[byteLength * sourceImage.Height];
+                var buffer = new Byte[byteLength];
                 var value = new Byte[byteCount];
 
-                Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
-               
                 for (int y = 0; y < bitmapHeight; y++)
                 {
+                    Marshal.Copy(data.Scan0 + (byteLength * y), buffer, 0, buffer.Length);
                     var index = 0;
                     for (int x = 0; x < bitmapWidth; x++)
                     {
                         var indexOffset = index >> 3;
 
                         for (var valueIndex = 0; valueIndex < byteCount; valueIndex++)
-                            value[valueIndex] = buffer[offset + valueIndex + indexOffset];
+                            value[valueIndex] = buffer[valueIndex + indexOffset];
 
                         var indexAlpha = (byte)((value[Alpha] >> 3) + 1);
                         var indexRed = (byte)((value[Red] >> 3) + 1);
@@ -148,8 +143,6 @@ namespace nQuant
                             new Pixel(indexAlpha, indexRed, indexGreen, indexBlue));
                         index += bitDepth;
                     }
-
-                    offset += byteLength;
                 }
             }
             finally

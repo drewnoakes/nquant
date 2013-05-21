@@ -29,22 +29,21 @@ namespace nQuant
             var lookupsList = lookups.Lookups;
             int lookupsCount = lookupsList.Count;
 
-            Dictionary<int, int> cachedMaches = new Dictionary<int, int>();
+            Dictionary<int, byte> cachedMaches = new Dictionary<int, byte>();
 
             for (int pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)
             {
                 Pixel pixel = pixels[pixelIndex];
-                palette.PixelIndex[pixelIndex] = -1;
+                palette.PixelIndex[pixelIndex] = AlphaColor;
                 if (pixel.Alpha <= alphaThreshold)
                     continue;
 
-                int bestMatch;
+                byte bestMatch;
                 int argb = pixel.Argb;
 
                 if (!cachedMaches.TryGetValue(argb, out bestMatch))
                 {
                     int match = quantizedPixels[pixelIndex].Argb;
-                    bestMatch = match;
                     int bestDistance = int.MaxValue;
 
                     for (int lookupIndex = 0; lookupIndex < lookupsList.Count; lookupIndex++)
@@ -61,7 +60,7 @@ namespace nQuant
                             continue;
 
                         bestDistance = distance;
-                        bestMatch = lookupIndex;
+                        bestMatch = (byte)lookupIndex;
                     }
 
                     cachedMaches[argb] = bestMatch;

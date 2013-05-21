@@ -11,7 +11,7 @@ namespace nQuant
         public long Red;
         public long Green;
         public long Blue;
-        public long Weight;
+        public int Weight;
         public float Moment;
 
         public static ColorMoment operator +(ColorMoment c1, ColorMoment c2)

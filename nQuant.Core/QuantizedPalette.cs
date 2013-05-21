@@ -8,9 +8,9 @@ namespace nQuant
         public QuantizedPalette(int size)
         {
             Colors = new List<Color>();
-            PixelIndex = new int[size];
+            PixelIndex = new byte[size];
         }
-        public IList<Color> Colors { get; private set; }
-        public int[] PixelIndex { get; private set; }
+        public List<Color> Colors { get; private set; }
+        public byte[] PixelIndex { get; private set; }
     }
 }
