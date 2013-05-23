@@ -7,25 +7,18 @@ namespace nQuant
     {
         protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold)
         {
-            int imageSize = data.PixelsCount;
+            int pixelsCount = data.Pixels.Length;
             LookupData lookups = BuildLookups(cubes, data);
-
-            var quantizedPixels = data.QuantizedPixels;
-            for (var index = 0; index < quantizedPixels.Length; ++index)
-            {
-                Pixel quantizedPixel = quantizedPixels[index];
-                quantizedPixels[index] = new Pixel(lookups.Tags[quantizedPixel.Alpha, quantizedPixel.Red, quantizedPixel.Green, quantizedPixel.Blue]);
-            }
 
             var alphas = new int[colorCount + 1];
             var reds = new int[colorCount + 1];
             var greens = new int[colorCount + 1];
             var blues = new int[colorCount + 1];
             var sums = new int[colorCount + 1];
-            var palette = new QuantizedPalette(imageSize);
+            var palette = new QuantizedPalette(pixelsCount);
 
             var pixels = data.Pixels;
-            int pixelsCount = data.PixelsCount;
+            
             var lookupsList = lookups.Lookups;
             int lookupsCount = lookupsList.Count;
 
@@ -43,7 +36,6 @@ namespace nQuant
 
                 if (!cachedMaches.TryGetValue(argb, out bestMatch))
                 {
-                    int match = quantizedPixels[pixelIndex].Argb;
                     int bestDistance = int.MaxValue;
 
                     for (int lookupIndex = 0; lookupIndex < lookupsList.Count; lookupIndex++)

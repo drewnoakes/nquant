@@ -12,23 +12,18 @@ namespace nQuant
 
             pixelsCount = bitmapWidth*bitmapHeight;
             pixels = new Pixel[pixelsCount];
-            quantizedPixels = new Pixel[pixelsCount];
         }
 
         public ColorMoment[, , ,] Moments { get; private set; }
 
-        public Pixel[] QuantizedPixels { get { return quantizedPixels; } }
         public Pixel[] Pixels { get { return pixels; } }
 
-        public int PixelsCount { get { return pixels.Length; } }
-        public void AddPixel(Pixel pixel, Pixel quantizedPixel)
+        public void AddPixel(Pixel pixel)
         {
-            pixels[pixelFillingCounter] = pixel;
-            quantizedPixels[pixelFillingCounter++] = quantizedPixel;
+            pixels[pixelFillingCounter++] = pixel;
         }
 
         private Pixel[] pixels;
-        private Pixel[] quantizedPixels;
         private int pixelsCount;
         private int pixelFillingCounter;
     }
