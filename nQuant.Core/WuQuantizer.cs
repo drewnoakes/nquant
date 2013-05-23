@@ -27,44 +27,48 @@ namespace nQuant
             for (int pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)
             {
                 Pixel pixel = pixels[pixelIndex];
-                palette.PixelIndex[pixelIndex] = AlphaColor;
-                if (pixel.Alpha <= alphaThreshold)
-                    continue;
-
-                byte bestMatch;
-                int argb = pixel.Argb;
-
-                if (!cachedMaches.TryGetValue(argb, out bestMatch))
+                
+                if (pixel.Alpha > alphaThreshold)
                 {
-                    int bestDistance = int.MaxValue;
+                    byte bestMatch;
+                    int argb = pixel.Argb;
 
-                    for (int lookupIndex = 0; lookupIndex < lookupsList.Count; lookupIndex++)
+                    if (!cachedMaches.TryGetValue(argb, out bestMatch))
                     {
-                        Lookup lookup = lookupsList[lookupIndex];
-                        var deltaAlpha = pixel.Alpha - lookup.Alpha;
-                        var deltaRed = pixel.Red - lookup.Red;
-                        var deltaGreen = pixel.Green - lookup.Green;
-                        var deltaBlue = pixel.Blue - lookup.Blue;
+                        int bestDistance = int.MaxValue;
 
-                        int distance = deltaAlpha*deltaAlpha + deltaRed*deltaRed + deltaGreen*deltaGreen + deltaBlue*deltaBlue;
+                        for (int lookupIndex = 0; lookupIndex < lookupsList.Count; lookupIndex++)
+                        {
+                            Lookup lookup = lookupsList[lookupIndex];
+                            var deltaAlpha = pixel.Alpha - lookup.Alpha;
+                            var deltaRed = pixel.Red - lookup.Red;
+                            var deltaGreen = pixel.Green - lookup.Green;
+                            var deltaBlue = pixel.Blue - lookup.Blue;
 
-                        if (distance >= bestDistance)
-                            continue;
+                            int distance = deltaAlpha * deltaAlpha + deltaRed * deltaRed + deltaGreen * deltaGreen + deltaBlue * deltaBlue;
 
-                        bestDistance = distance;
-                        bestMatch = (byte)lookupIndex;
+                            if (distance >= bestDistance)
+                                continue;
+
+                            bestDistance = distance;
+                            bestMatch = (byte)lookupIndex;
+                        }
+
+                        cachedMaches[argb] = bestMatch;
                     }
 
-                    cachedMaches[argb] = bestMatch;
+                    alphas[bestMatch] += pixel.Alpha;
+                    reds[bestMatch] += pixel.Red;
+                    greens[bestMatch] += pixel.Green;
+                    blues[bestMatch] += pixel.Blue;
+                    sums[bestMatch]++;
+
+                    palette.PixelIndex[pixelIndex] = bestMatch;
                 }
-
-                alphas[bestMatch] += pixel.Alpha;
-                reds[bestMatch] += pixel.Red;
-                greens[bestMatch] += pixel.Green;
-                blues[bestMatch] += pixel.Blue;
-                sums[bestMatch]++;
-
-                palette.PixelIndex[pixelIndex] = bestMatch;
+                else
+                {
+                    palette.PixelIndex[pixelIndex] = AlphaColor;
+                }
             }
 
             for (var paletteIndex = 0; paletteIndex < colorCount; paletteIndex++)
