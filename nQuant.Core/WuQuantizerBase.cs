@@ -434,7 +434,7 @@ namespace nQuant
                     moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMinimum, cube.BlueMinimum]);
         }
 
-        private IEnumerable<Box> SplitData(ref int colorCount, ColorData data)
+        private Box[] SplitData(ref int colorCount, ColorData data)
         {
             --colorCount;
             var next = 0;
@@ -471,12 +471,12 @@ namespace nQuant
                 colorCount = cubeIndex + 1;
                 break;
             }
-            return cubes.Take(colorCount).ToList();
+            return cubes.Take(colorCount).ToArray();
         }
 
-        protected LookupData BuildLookups(IEnumerable<Box> cubes, ColorData data)
+        protected Lookup[] BuildLookups(Box[] cubes, ColorData data)
         {
-            LookupData lookups = new LookupData(SideSize);
+            List<Lookup> lookups = new List<Lookup>(cubes.Length);
 
             foreach (var cube in cubes)
             {
@@ -491,11 +491,11 @@ namespace nQuant
                         Green = (int)(volume.Green / volume.Weight),
                         Blue = (int)(volume.Blue / volume.Weight)
                     };
-                lookups.Lookups.Add(lookup);
+                lookups.Add(lookup);
             }
-            return lookups;
+            return lookups.ToArray();
         }
 
-        protected abstract QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold);
+        protected abstract QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, Box[] cubes, int alphaThreshold);
     }
 }

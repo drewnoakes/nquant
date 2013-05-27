@@ -5,10 +5,10 @@ namespace nQuant
 {
     public class WuQuantizer : WuQuantizerBase, IWuQuantizer
     {
-        protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold)
+        protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, Box[] cubes, int alphaThreshold)
         {
             int pixelsCount = data.Pixels.Length;
-            LookupData lookups = BuildLookups(cubes, data);
+            var lookups = BuildLookups(cubes, data);
 
             var alphas = new int[colorCount + 1];
             var reds = new int[colorCount + 1];
@@ -18,9 +18,6 @@ namespace nQuant
             var palette = new QuantizedPalette(pixelsCount);
 
             var pixels = data.Pixels;
-            
-            var lookupsList = lookups.Lookups;
-            int lookupsCount = lookupsList.Count;
 
             Dictionary<int, byte> cachedMaches = new Dictionary<int, byte>();
 
@@ -37,9 +34,9 @@ namespace nQuant
                     {
                         int bestDistance = int.MaxValue;
 
-                        for (int lookupIndex = 0; lookupIndex < lookupsList.Count; lookupIndex++)
+                        for (int lookupIndex = 0; lookupIndex < lookups.Length; lookupIndex++)
                         {
-                            Lookup lookup = lookupsList[lookupIndex];
+                            Lookup lookup = lookups[lookupIndex];
                             var deltaAlpha = pixel.Alpha - lookup.Alpha;
                             var deltaRed = pixel.Red - lookup.Red;
                             var deltaGreen = pixel.Green - lookup.Green;
