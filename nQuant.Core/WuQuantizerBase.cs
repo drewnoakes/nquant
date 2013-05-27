@@ -145,7 +145,8 @@ namespace nQuant
 
         private static ColorData CalculateMoments(ColorData data)
         {
-            var xarea = new ColorMoment[SideSize, SideSize, SideSize];
+            var xarea = new ColorMoment[SideSize, SideSize];
+            var xPreviousArea = new ColorMoment[SideSize, SideSize];
             var area = new ColorMoment[SideSize];
             for (var alphaIndex = 1; alphaIndex <= MaxSideIndex; ++alphaIndex)
             {
@@ -159,10 +160,13 @@ namespace nQuant
                         {
                             line += data.Moments[alphaIndex, redIndex, greenIndex, blueIndex];
                             area[blueIndex] += line;
-                            xarea[redIndex, greenIndex, blueIndex] = xarea[redIndex - 1, greenIndex, blueIndex] + area[blueIndex];
-                            data.Moments[alphaIndex, redIndex, greenIndex, blueIndex] = data.Moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[redIndex, greenIndex, blueIndex];
+                            xarea[greenIndex, blueIndex] = xPreviousArea[greenIndex, blueIndex] + area[blueIndex];
+                            data.Moments[alphaIndex, redIndex, greenIndex, blueIndex] = data.Moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[greenIndex, blueIndex];
                         }
                     }
+                    var temp = xarea;
+                    xarea = xPreviousArea;
+                    xPreviousArea = temp;
                 }
             }
             return data;

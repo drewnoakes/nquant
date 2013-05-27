@@ -7,10 +7,8 @@ namespace nQuant
         public LookupData(int granularity)
         {
             Lookups = new List<Lookup>();
-            Tags = new int[granularity, granularity, granularity, granularity];
         }
 
         public List<Lookup> Lookups { get; private set; }
-        public int[, , ,] Tags { get; private set; }
     }
 }
