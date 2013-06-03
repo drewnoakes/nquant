@@ -1,33 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace nQuant
 {
     public class WuQuantizer : WuQuantizerBase, IWuQuantizer
     {
-        protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, Box[] cubes, int alphaThreshold)
+        private IEnumerable<byte> indexedPixels(ImageBuffer image, Lookup[] lookups, int alphaThreshold, PaletteBuffer paletteBuffer)
         {
-            int pixelsCount = data.Pixels.Length;
-            var lookups = BuildLookups(cubes, data);
+            int pixelsCount = image.Image.Width * image.Image.Height;
 
-            var alphas = new int[colorCount + 1];
-            var reds = new int[colorCount + 1];
-            var greens = new int[colorCount + 1];
-            var blues = new int[colorCount + 1];
-            var sums = new int[colorCount + 1];
-            var palette = new QuantizedPalette(pixelsCount);
-
-            var pixels = data.Pixels;
+            var alphas = paletteBuffer.Alphas;
+            var reds = paletteBuffer.Reds;
+            var greens = paletteBuffer.Greens;
+            var blues = paletteBuffer.Blues;
+            var sums = paletteBuffer.Sums;
 
             Dictionary<int, byte> cachedMaches = new Dictionary<int, byte>();
-
-            for (int pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)
+            foreach (Pixel pixel in image.Pixels)
             {
-                Pixel pixel = pixels[pixelIndex];
-                
+                byte bestMatch = AlphaColor;
                 if (pixel.Alpha > alphaThreshold)
                 {
-                    byte bestMatch;
                     int argb = pixel.Argb;
 
                     if (!cachedMaches.TryGetValue(argb, out bestMatch))
@@ -59,32 +53,19 @@ namespace nQuant
                     greens[bestMatch] += pixel.Green;
                     blues[bestMatch] += pixel.Blue;
                     sums[bestMatch]++;
-
-                    palette.PixelIndex[pixelIndex] = bestMatch;
                 }
-                else
-                {
-                    palette.PixelIndex[pixelIndex] = AlphaColor;
-                }
+                yield return bestMatch;
             }
+        }
 
-            for (var paletteIndex = 0; paletteIndex < colorCount; paletteIndex++)
-            {
-                if (sums[paletteIndex] > 0)
-                {
-                    alphas[paletteIndex] /= sums[paletteIndex];
-                    reds[paletteIndex] /= sums[paletteIndex];
-                    greens[paletteIndex] /= sums[paletteIndex];
-                    blues[paletteIndex] /= sums[paletteIndex];
-                }
-
-                var color = Color.FromArgb(alphas[paletteIndex], reds[paletteIndex], greens[paletteIndex], blues[paletteIndex]);
-                palette.Colors.Add(color);
-            }
-
-            palette.Colors.Add(Color.FromArgb(0, 0, 0, 0));
-
-            return palette;
+        internal override Image GetQuantizedImage(ImageBuffer image, int colorCount, Lookup[] lookups, int alphaThreshold)
+        {
+            var result = new Bitmap(image.Image.Width, image.Image.Height, PixelFormat.Format8bppIndexed);
+            var resultBuffer = new ImageBuffer(result);
+            PaletteBuffer paletteBuffer = new PaletteBuffer(colorCount);
+            resultBuffer.UpdatePixelIndexes(indexedPixels(image,lookups, alphaThreshold, paletteBuffer));
+            result.Palette = paletteBuffer.BuildPalette(result.Palette);
+            return result;
         }
     }
 }

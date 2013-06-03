@@ -19,10 +19,10 @@ namespace nQuant
             : this()
         {
             Argb = argb;
-            System.Diagnostics.Debug.Assert(Alpha == (argb >> 24));
-            System.Diagnostics.Debug.Assert(Red == ((argb >> 16) & 255));
-            System.Diagnostics.Debug.Assert(Green == ((argb >> 8) & 255));
-            System.Diagnostics.Debug.Assert(Blue == (argb & 255));
+            System.Diagnostics.Debug.Assert(Alpha == ((uint)argb >> 24));
+            System.Diagnostics.Debug.Assert(Red == ((uint)(argb >> 16) & 255));
+            System.Diagnostics.Debug.Assert(Green == ((uint)(argb >> 8) & 255));
+            System.Diagnostics.Debug.Assert(Blue == ((uint)argb & 255));
         }
 
         [FieldOffsetAttribute(3)]
