@@ -62,6 +62,7 @@ namespace nQuant
             var xarea = new ColorMoment[SideSize, SideSize];
             var xPreviousArea = new ColorMoment[SideSize, SideSize];
             var area = new ColorMoment[SideSize];
+            var moments = data.Moments;
             for (var alphaIndex = 1; alphaIndex <= MaxSideIndex; ++alphaIndex)
             {
                 for (var redIndex = 1; redIndex <= MaxSideIndex; ++redIndex)
@@ -72,10 +73,10 @@ namespace nQuant
                         ColorMoment line = new ColorMoment();
                         for (var blueIndex = 1; blueIndex <= MaxSideIndex; ++blueIndex)
                         {
-                            line += data.Moments[alphaIndex, redIndex, greenIndex, blueIndex];
+                            line += moments[alphaIndex, redIndex, greenIndex, blueIndex];
                             area[blueIndex] += line;
                             xarea[greenIndex, blueIndex] = xPreviousArea[greenIndex, blueIndex] + area[blueIndex];
-                            data.Moments[alphaIndex, redIndex, greenIndex, blueIndex] = data.Moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[greenIndex, blueIndex];
+                            moments[alphaIndex, redIndex, greenIndex, blueIndex] = moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[greenIndex, blueIndex];
                         }
                     }
                     var temp = xarea;
@@ -388,9 +389,9 @@ namespace nQuant
             return cubes.Take(colorCount).ToArray();
         }
 
-        protected Lookup[] BuildLookups(Box[] cubes, ColorData data)
+        protected List<Pixel> BuildLookups(Box[] cubes, ColorData data)
         {
-            List<Lookup> lookups = new List<Lookup>(cubes.Length);
+            List<Pixel> lookups = new List<Pixel>(cubes.Length);
 
             foreach (var cube in cubes)
             {
@@ -398,18 +399,18 @@ namespace nQuant
 
                 if (volume.Weight <= 0) continue;
 
-                var lookup = new Lookup
+                var lookup = new Pixel
                     {
-                        Alpha = (int)(volume.Alpha / volume.Weight),
-                        Red = (int)(volume.Red / volume.Weight),
-                        Green = (int)(volume.Green / volume.Weight),
-                        Blue = (int)(volume.Blue / volume.Weight)
+                        Alpha = (byte)(volume.Alpha / volume.Weight),
+                        Red = (byte)(volume.Red / volume.Weight),
+                        Green = (byte)(volume.Green / volume.Weight),
+                        Blue = (byte)(volume.Blue / volume.Weight)
                     };
                 lookups.Add(lookup);
             }
-            return lookups.ToArray();
+            return lookups;
         }
 
-        internal abstract Image GetQuantizedImage(ImageBuffer image, int colorCount, Lookup[] lookups, int alphaThreshold);
+        internal abstract Image GetQuantizedImage(ImageBuffer image, int colorCount, List<Pixel> lookups, int alphaThreshold);
     }
 }

@@ -6,7 +6,7 @@ namespace nQuant
 {
     public class WuQuantizer : WuQuantizerBase, IWuQuantizer
     {
-        private IEnumerable<byte> indexedPixels(ImageBuffer image, Lookup[] lookups, int alphaThreshold, PaletteBuffer paletteBuffer)
+        private IEnumerable<byte> indexedPixels(ImageBuffer image, List<Pixel> lookups, int alphaThreshold, PaletteBuffer paletteBuffer)
         {
             int pixelsCount = image.Image.Width * image.Image.Height;
 
@@ -16,37 +16,13 @@ namespace nQuant
             var blues = paletteBuffer.Blues;
             var sums = paletteBuffer.Sums;
 
-            Dictionary<int, byte> cachedMaches = new Dictionary<int, byte>();
+            PaletteLookup lookup = new PaletteLookup(lookups);
             foreach (Pixel pixel in image.Pixels)
             {
                 byte bestMatch = AlphaColor;
                 if (pixel.Alpha > alphaThreshold)
                 {
-                    int argb = pixel.Argb;
-
-                    if (!cachedMaches.TryGetValue(argb, out bestMatch))
-                    {
-                        int bestDistance = int.MaxValue;
-
-                        for (int lookupIndex = 0; lookupIndex < lookups.Length; lookupIndex++)
-                        {
-                            Lookup lookup = lookups[lookupIndex];
-                            var deltaAlpha = pixel.Alpha - lookup.Alpha;
-                            var deltaRed = pixel.Red - lookup.Red;
-                            var deltaGreen = pixel.Green - lookup.Green;
-                            var deltaBlue = pixel.Blue - lookup.Blue;
-
-                            int distance = deltaAlpha * deltaAlpha + deltaRed * deltaRed + deltaGreen * deltaGreen + deltaBlue * deltaBlue;
-
-                            if (distance >= bestDistance)
-                                continue;
-
-                            bestDistance = distance;
-                            bestMatch = (byte)lookupIndex;
-                        }
-
-                        cachedMaches[argb] = bestMatch;
-                    }
+                    bestMatch = lookup.GetPaletteIndex(pixel);
 
                     alphas[bestMatch] += pixel.Alpha;
                     reds[bestMatch] += pixel.Red;
@@ -58,7 +34,7 @@ namespace nQuant
             }
         }
 
-        internal override Image GetQuantizedImage(ImageBuffer image, int colorCount, Lookup[] lookups, int alphaThreshold)
+        internal override Image GetQuantizedImage(ImageBuffer image, int colorCount, List<Pixel> lookups, int alphaThreshold)
         {
             var result = new Bitmap(image.Image.Width, image.Image.Height, PixelFormat.Format8bppIndexed);
             var resultBuffer = new ImageBuffer(result);

@@ -36,7 +36,7 @@ namespace nQuant
         [FieldOffsetAttribute(0)]
         public int Argb;
 
-        public long Distance()
+        public long Amplitude()
         {
             return (Alpha * Alpha) + (Red * Red) + (Green * Green) + (Blue * Blue);
         }

@@ -54,7 +54,7 @@ namespace nQuant
             m.Green += p.Green;
             m.Blue += p.Blue;
             m.Weight++;
-            m.Moment += p.Distance();
+            m.Moment += p.Amplitude();
             return m;
         }
 
