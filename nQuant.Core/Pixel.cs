@@ -5,8 +5,8 @@ namespace nQuant
     public struct Pixel
     {
         public Pixel(byte alpha, byte red, byte green, byte blue)
+            : this()
         {
-            Argb = 0;
             Alpha = alpha;
             Red = red;
             Green = green;

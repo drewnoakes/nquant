@@ -51,7 +51,7 @@ namespace nQuant
                     indexedPixel.Red = (byte)((indexedPixel.Red >> 3) + 1);
                     indexedPixel.Green = (byte)((indexedPixel.Green >> 3) + 1);
                     indexedPixel.Blue = (byte)((indexedPixel.Blue >> 3) + 1);
-                    colorData.Moments[indexedPixel.Alpha, indexedPixel.Red, indexedPixel.Green, indexedPixel.Blue] += pixel;
+                    colorData.Moments[indexedPixel.Alpha, indexedPixel.Red, indexedPixel.Green, indexedPixel.Blue].Add(pixel);
                 }
             }
             return colorData;
@@ -60,7 +60,6 @@ namespace nQuant
         private static ColorData CalculateMoments(ColorData data)
         {
             var xarea = new ColorMoment[SideSize, SideSize];
-            var xPreviousArea = new ColorMoment[SideSize, SideSize];
             var area = new ColorMoment[SideSize];
             var moments = data.Moments;
             for (var alphaIndex = 1; alphaIndex <= MaxSideIndex; ++alphaIndex)
@@ -73,15 +72,12 @@ namespace nQuant
                         ColorMoment line = new ColorMoment();
                         for (var blueIndex = 1; blueIndex <= MaxSideIndex; ++blueIndex)
                         {
-                            line += moments[alphaIndex, redIndex, greenIndex, blueIndex];
-                            area[blueIndex] += line;
-                            xarea[greenIndex, blueIndex] = xPreviousArea[greenIndex, blueIndex] + area[blueIndex];
+                            line.AddFast(ref moments[alphaIndex, redIndex, greenIndex, blueIndex]);
+                            area[blueIndex].AddFast(ref line);
+                            xarea[greenIndex, blueIndex].AddFast(ref area[blueIndex]);
                             moments[alphaIndex, redIndex, greenIndex, blueIndex] = moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[greenIndex, blueIndex];
                         }
                     }
-                    var temp = xarea;
-                    xarea = xPreviousArea;
-                    xPreviousArea = temp;
                 }
             }
             return data;
@@ -389,7 +385,7 @@ namespace nQuant
             return cubes.Take(colorCount).ToArray();
         }
 
-        protected List<Pixel> BuildLookups(Box[] cubes, ColorData data)
+        private List<Pixel> BuildLookups(Box[] cubes, ColorData data)
         {
             List<Pixel> lookups = new List<Pixel>(cubes.Length);
 
