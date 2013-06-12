@@ -39,8 +39,9 @@ namespace nQuant
             ColorData colorData = new ColorData(MaxSideIndex);
             foreach(var pixelLine in sourceImage.PixelLines)
             {
-                foreach (Pixel pixel in pixelLine)
+                for (int pixelIndex = 0; pixelIndex < pixelLine.Length; pixelIndex++)
                 {
+                    Pixel pixel = pixelLine[pixelIndex];
                     if (pixel.Alpha > alphaThreshold)
                     {
                         Pixel indexedPixel = pixel;
