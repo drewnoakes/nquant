@@ -23,12 +23,15 @@ namespace nQuant
 
         public byte GetPaletteIndex(Pixel pixel)
         {
-
-            int pixelKey = pixel.Argb & mMask;
+            int pixelArgb = pixel.Argb;
+            int pixelKey = pixelArgb & mMask;
             List<LookupNode> bucket;
             if (!mLookup.TryGetValue(pixelKey, out bucket))
             {
-                bucket = Palette;
+                if (!mLookup.TryGetValue(pixelArgb, out bucket))
+                {
+                    bucket = Palette;
+                }
             }
 
             if (bucket.Count == 1)
@@ -61,6 +64,13 @@ namespace nQuant
                 bestDistance = distance;
                 bestMatch = lookup.PaletteIndex;
             }
+
+            if (bucket == Palette)
+            {
+                int key = (pixelKey == 0) ? pixelArgb : pixelKey;
+                mLookup[pixelArgb] = new List<LookupNode> { bucket[bestMatch] };
+            }
+            
             return bestMatch;
         }
 
