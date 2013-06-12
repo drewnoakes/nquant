@@ -68,7 +68,7 @@ namespace nQuant
             if (bucket == Palette)
             {
                 int key = (pixelKey == 0) ? pixelArgb : pixelKey;
-                mLookup[pixelArgb] = new List<LookupNode> { bucket[bestMatch] };
+                mLookup[key] = new List<LookupNode> { bucket[bestMatch] };
             }
             
             return bestMatch;

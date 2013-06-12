@@ -37,23 +37,27 @@ namespace nQuant
         private static ColorData BuildHistogram(ImageBuffer sourceImage, int alphaThreshold, int alphaFader)
         {
             ColorData colorData = new ColorData(MaxSideIndex);
-            foreach (Pixel pixel in sourceImage.Pixels)
+            foreach(var pixelLine in sourceImage.PixelLines)
             {
-                if (pixel.Alpha > alphaThreshold)
+                foreach (Pixel pixel in pixelLine)
                 {
-                    Pixel indexedPixel = pixel;
-                    if (indexedPixel.Alpha < 255)
+                    if (pixel.Alpha > alphaThreshold)
                     {
-                        var alpha = pixel.Alpha + (pixel.Alpha % alphaFader);
-                        indexedPixel.Alpha = (byte)(alpha > 255 ? 255 : alpha);
+                        Pixel indexedPixel = pixel;
+                        if (indexedPixel.Alpha < 255)
+                        {
+                            var alpha = pixel.Alpha + (pixel.Alpha % alphaFader);
+                            indexedPixel.Alpha = (byte)(alpha > 255 ? 255 : alpha);
+                        }
+                        indexedPixel.Alpha = (byte)((indexedPixel.Alpha >> 3) + 1);
+                        indexedPixel.Red = (byte)((indexedPixel.Red >> 3) + 1);
+                        indexedPixel.Green = (byte)((indexedPixel.Green >> 3) + 1);
+                        indexedPixel.Blue = (byte)((indexedPixel.Blue >> 3) + 1);
+                        colorData.Moments[indexedPixel.Alpha, indexedPixel.Red, indexedPixel.Green, indexedPixel.Blue].Add(pixel);
                     }
-                    indexedPixel.Alpha = (byte)((indexedPixel.Alpha >> 3) + 1);
-                    indexedPixel.Red = (byte)((indexedPixel.Red >> 3) + 1);
-                    indexedPixel.Green = (byte)((indexedPixel.Green >> 3) + 1);
-                    indexedPixel.Blue = (byte)((indexedPixel.Blue >> 3) + 1);
-                    colorData.Moments[indexedPixel.Alpha, indexedPixel.Red, indexedPixel.Green, indexedPixel.Blue].Add(pixel);
                 }
             }
+            
             return colorData;
         }
 

@@ -17,20 +17,24 @@ namespace nQuant
             var sums = paletteBuffer.Sums;
 
             PaletteLookup lookup = new PaletteLookup(lookups);
-            foreach (Pixel pixel in image.Pixels)
+            foreach (var pixelLine in image.PixelLines)
             {
-                byte bestMatch = AlphaColor;
-                if (pixel.Alpha > alphaThreshold)
+                for (int pixelIndex = 0; pixelIndex < pixelLine.Length; pixelIndex++)
                 {
-                    bestMatch = lookup.GetPaletteIndex(pixel);
+                    Pixel pixel = pixelLine[pixelIndex];
+                    byte bestMatch = AlphaColor;
+                    if (pixel.Alpha > alphaThreshold)
+                    {
+                        bestMatch = lookup.GetPaletteIndex(pixel);
 
-                    alphas[bestMatch] += pixel.Alpha;
-                    reds[bestMatch] += pixel.Red;
-                    greens[bestMatch] += pixel.Green;
-                    blues[bestMatch] += pixel.Blue;
-                    sums[bestMatch]++;
+                        alphas[bestMatch] += pixel.Alpha;
+                        reds[bestMatch] += pixel.Red;
+                        greens[bestMatch] += pixel.Green;
+                        blues[bestMatch] += pixel.Blue;
+                        sums[bestMatch]++;
+                    }
+                    yield return bestMatch;
                 }
-                yield return bestMatch;
             }
         }
 
