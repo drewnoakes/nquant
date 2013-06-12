@@ -1,7 +1,8 @@
-﻿
+﻿//using System.Runtime.CompilerServices;
+
 namespace nQuant
 {
-    public struct ColorMoment
+    struct ColorMoment
     {
         public long Alpha;
         public long Red;
@@ -43,16 +44,22 @@ namespace nQuant
             return c1;
         }
 
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(Pixel p)
         {
-            Alpha += p.Alpha;
-            Red += p.Red;
-            Green += p.Green;
-            Blue += p.Blue;
+            byte pAlpha = p.Alpha;
+            byte pRed = p.Red;
+            byte pGreen = p.Green;
+            byte pBlue = p.Blue;
+            Alpha += pAlpha;
+            Red += pRed;
+            Green += pGreen;
+            Blue += pBlue;
             Weight++;
-            Moment += p.Amplitude();
+            Moment += pAlpha * pAlpha + pRed * pRed + pGreen * pGreen + pBlue * pBlue;
         }
 
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddFast(ref ColorMoment c2)
         {
             Alpha += c2.Alpha;

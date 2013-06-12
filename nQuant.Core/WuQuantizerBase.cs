@@ -42,19 +42,23 @@ namespace nQuant
                 for (int pixelIndex = 0; pixelIndex < pixelLine.Length; pixelIndex++)
                 {
                     Pixel pixel = pixelLine[pixelIndex];
-                    if (pixel.Alpha > alphaThreshold)
+                    byte pixelAlpha = pixel.Alpha;
+                    if (pixelAlpha > alphaThreshold)
                     {
-                        Pixel indexedPixel = pixel;
-                        if (indexedPixel.Alpha < 255)
+                        if (pixelAlpha < 255)
                         {
                             var alpha = pixel.Alpha + (pixel.Alpha % alphaFader);
-                            indexedPixel.Alpha = (byte)(alpha > 255 ? 255 : alpha);
+                            pixelAlpha = (byte)(alpha > 255 ? 255 : alpha);
                         }
-                        indexedPixel.Alpha = (byte)((indexedPixel.Alpha >> 3) + 1);
-                        indexedPixel.Red = (byte)((indexedPixel.Red >> 3) + 1);
-                        indexedPixel.Green = (byte)((indexedPixel.Green >> 3) + 1);
-                        indexedPixel.Blue = (byte)((indexedPixel.Blue >> 3) + 1);
-                        colorData.Moments[indexedPixel.Alpha, indexedPixel.Red, indexedPixel.Green, indexedPixel.Blue].Add(pixel);
+                        byte pixelRed = pixel.Red;
+                        byte pixelGreen = pixel.Green;
+                        byte pixelBlue = pixel.Blue;
+
+                        pixelAlpha = (byte)((pixelAlpha >> 3) + 1);
+                        pixelRed = (byte)((pixelRed >> 3) + 1);
+                        pixelGreen = (byte)((pixelGreen >> 3) + 1);
+                        pixelBlue = (byte)((pixelBlue >> 3) + 1);
+                        colorData.Moments[pixelAlpha, pixelRed, pixelGreen, pixelBlue].Add(pixel);
                     }
                 }
             }

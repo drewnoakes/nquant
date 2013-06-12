@@ -23,15 +23,11 @@ namespace nQuant
 
         public byte GetPaletteIndex(Pixel pixel)
         {
-            int pixelArgb = pixel.Argb;
-            int pixelKey = pixelArgb & mMask;
+            int pixelKey = pixel.Argb & mMask;
             LookupNode[] bucket;
             if (!mLookup.TryGetValue(pixelKey, out bucket))
             {
-                if (!mLookup.TryGetValue(pixelArgb, out bucket))
-                {
-                    bucket = Palette;
-                }
+                bucket = Palette;
             }
 
             if (bucket.Length == 1)
@@ -64,10 +60,9 @@ namespace nQuant
                 bestMatch = lookup.PaletteIndex;
             }
 
-            if (bucket == Palette)
+            if ((bucket == Palette) && (pixelKey != 0))
             {
-                int key = (pixelKey == 0) ? pixelArgb : pixelKey;
-                mLookup[key] = new LookupNode[] { bucket[bestMatch] };
+                mLookup[pixelKey] = new LookupNode[] { bucket[bestMatch] };
             }
             
             return bestMatch;

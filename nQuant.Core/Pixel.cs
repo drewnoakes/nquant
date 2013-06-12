@@ -36,11 +36,6 @@ namespace nQuant
         [FieldOffsetAttribute(0)]
         public int Argb;
 
-        public long Amplitude()
-        {
-            return (Alpha * Alpha) + (Red * Red) + (Green * Green) + (Blue * Blue);
-        }
-
         public override string ToString()
         {
             return string.Format("Alpha:{0} Red:{1} Green:{2} Blue:{3}", Alpha, Red, Green, Blue);
