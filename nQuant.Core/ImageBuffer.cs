@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace nQuant
 {
@@ -17,41 +14,6 @@ namespace nQuant
 
         public Bitmap Image { get; set; }
 
-        protected const int Alpha = 3;
-        protected const int Red = 2;
-        protected const int Green = 1;
-        protected const int Blue = 0;
-
-        public IEnumerable<Pixel> Pixels
-        {
-            get
-            {
-                var bitDepth = System.Drawing.Image.GetPixelFormatSize(Image.PixelFormat);
-                if (bitDepth != 32)
-                    throw new QuantizationException(string.Format("The image you are attempting to quantize does not contain a 32 bit ARGB palette. This image has a bit depth of {0} with {1} colors.", bitDepth, Image.Palette.Entries.Length));
-
-                int width = this.Image.Width;
-                int height = this.Image.Height;
-                int[] buffer = new int[width];
-                for (int rowIndex = 0; rowIndex < height; rowIndex++)
-                {
-                    BitmapData data = this.Image.LockBits(Rectangle.FromLTRB(0, rowIndex, width, rowIndex + 1), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-                    try
-                    {
-                        Marshal.Copy(data.Scan0, buffer, 0, width);
-                        foreach (int pixel in buffer)
-                        {
-                            yield return new Pixel(pixel);
-                        }
-                    }
-                    finally
-                    {
-                        this.Image.UnlockBits(data);
-                    }
-                }
-            }
-        }
-
         public IEnumerable<Pixel[]> PixelLines
         {
             get
@@ -63,9 +25,9 @@ namespace nQuant
                 int width = this.Image.Width;
                 int height = this.Image.Height;
                 int[] buffer = new int[width];
+                Pixel[] pixels = new Pixel[width];
                 for (int rowIndex = 0; rowIndex < height; rowIndex++)
                 {
-                    Pixel[] pixels = new Pixel[width];
                     BitmapData data = this.Image.LockBits(Rectangle.FromLTRB(0, rowIndex, width, rowIndex + 1), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
                     try
                     {

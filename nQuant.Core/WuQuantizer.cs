@@ -6,11 +6,11 @@ namespace nQuant
 {
     public class WuQuantizer : WuQuantizerBase, IWuQuantizer
     {
-        private IEnumerable<byte> indexedPixels(ImageBuffer image, List<Pixel> lookups, int alphaThreshold, PaletteColorHistory[] paletteHistogram)
+        private IEnumerable<byte> indexedPixels(ImageBuffer image, Pixel[] lookups, int alphaThreshold, PaletteColorHistory[] paletteHistogram)
         {
             int pixelsCount = image.Image.Width * image.Image.Height;
 
-            PaletteLookup lookup = new PaletteLookup(lookups.ToArray());
+            PaletteLookup lookup = new PaletteLookup(lookups);
             foreach (var pixelLine in image.PixelLines)
             {
                 for (int pixelIndex = 0; pixelIndex < pixelLine.Length; pixelIndex++)
@@ -27,7 +27,7 @@ namespace nQuant
             }
         }
 
-        internal override Image GetQuantizedImage(ImageBuffer image, int colorCount, List<Pixel> lookups, int alphaThreshold)
+        internal override Image GetQuantizedImage(ImageBuffer image, int colorCount, Pixel[] lookups, int alphaThreshold)
         {
             var result = new Bitmap(image.Image.Width, image.Image.Height, PixelFormat.Format8bppIndexed);
             var resultBuffer = new ImageBuffer(result);

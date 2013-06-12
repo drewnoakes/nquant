@@ -393,13 +393,13 @@ namespace nQuant
             return cubes.Take(colorCount).ToArray();
         }
 
-        private List<Pixel> BuildLookups(Box[] cubes, ColorData data)
+        private Pixel[] BuildLookups(Box[] cubes, ColorData data)
         {
-            List<Pixel> lookups = new List<Pixel>(cubes.Length);
+            Pixel[] lookups = new Pixel[cubes.Length];
 
-            foreach (var cube in cubes)
+            for (int cubeIndex = 0; cubeIndex < cubes.Length; cubeIndex++)
             {
-                var volume = Volume(cube, data.Moments);
+                var volume = Volume(cubes[cubeIndex], data.Moments);
 
                 if (volume.Weight <= 0) continue;
 
@@ -410,11 +410,11 @@ namespace nQuant
                         Green = (byte)(volume.Green / volume.Weight),
                         Blue = (byte)(volume.Blue / volume.Weight)
                     };
-                lookups.Add(lookup);
+                lookups[cubeIndex] = lookup;
             }
             return lookups;
         }
 
-        internal abstract Image GetQuantizedImage(ImageBuffer image, int colorCount, List<Pixel> lookups, int alphaThreshold);
+        internal abstract Image GetQuantizedImage(ImageBuffer image, int colorCount, Pixel[] lookups, int alphaThreshold);
     }
 }
