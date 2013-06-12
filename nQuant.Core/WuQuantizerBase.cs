@@ -27,16 +27,16 @@ namespace nQuant
         {
             var colorCount = MaxColor;
             ImageBuffer buffer = new ImageBuffer(image);
-            var data = BuildHistogram(buffer, alphaThreshold, alphaFader);
-            data = CalculateMoments(data);
-            var cubes = SplitData(ref colorCount, data);
-            var lookups = BuildLookups(cubes, data);
+            var moments = BuildHistogram(buffer, alphaThreshold, alphaFader);
+            CalculateMoments(moments);
+            var cubes = SplitData(ref colorCount, moments);
+            var lookups = BuildLookups(cubes, moments);
             return GetQuantizedImage(buffer, colorCount, lookups, alphaThreshold);
         }
 
-        private static ColorData BuildHistogram(ImageBuffer sourceImage, int alphaThreshold, int alphaFader)
+        private static ColorMoment[, , ,] BuildHistogram(ImageBuffer sourceImage, int alphaThreshold, int alphaFader)
         {
-            ColorData colorData = new ColorData(MaxSideIndex);
+            var moments = new ColorMoment[SideSize, SideSize, SideSize, SideSize];
             foreach(var pixelLine in sourceImage.PixelLines)
             {
                 for (int pixelIndex = 0; pixelIndex < pixelLine.Length; pixelIndex++)
@@ -58,19 +58,18 @@ namespace nQuant
                         pixelRed = (byte)((pixelRed >> 3) + 1);
                         pixelGreen = (byte)((pixelGreen >> 3) + 1);
                         pixelBlue = (byte)((pixelBlue >> 3) + 1);
-                        colorData.Moments[pixelAlpha, pixelRed, pixelGreen, pixelBlue].Add(pixel);
+                        moments[pixelAlpha, pixelRed, pixelGreen, pixelBlue].Add(pixel);
                     }
                 }
             }
             
-            return colorData;
+            return moments;
         }
 
-        private static ColorData CalculateMoments(ColorData data)
+        private static void CalculateMoments(ColorMoment[, , ,] moments)
         {
             var xarea = new ColorMoment[SideSize, SideSize];
             var area = new ColorMoment[SideSize];
-            var moments = data.Moments;
             for (var alphaIndex = 1; alphaIndex <= MaxSideIndex; ++alphaIndex)
             {
                 for (var redIndex = 1; redIndex <= MaxSideIndex; ++redIndex)
@@ -92,7 +91,6 @@ namespace nQuant
                     }
                 }
             }
-            return data;
         }
 
         private static ColorMoment Top(Box cube, int direction, int position, ColorMoment[, , ,] moment)
@@ -193,15 +191,15 @@ namespace nQuant
             }
         }
 
-        private static CubeCut Maximize(ColorData data, Box cube, int direction, byte first, byte last, ColorMoment whole)
+        private static CubeCut Maximize(ColorMoment[, , ,] moments, Box cube, int direction, byte first, byte last, ColorMoment whole)
         {
-            var bottom = Bottom(cube, direction, data.Moments);
+            var bottom = Bottom(cube, direction, moments);
             var result = 0.0f;
             byte? cutPoint = null;
 
             for (var position = first; position < last; ++position)
             {
-                var half = bottom + Top(cube, direction, position, data.Moments);
+                var half = bottom + Top(cube, direction, position, moments);
                 if (half.Weight == 0) continue;
 
                 var temp = half.WeightedDistance();
@@ -222,14 +220,14 @@ namespace nQuant
             return new CubeCut(cutPoint, result);
         }
 
-        private bool Cut(ColorData data, ref Box first,ref Box second)
+        private bool Cut(ColorMoment[, , ,] moments, ref Box first, ref Box second)
         {
             int direction;
-            var whole = Volume(first, data.Moments);
-            var maxAlpha = Maximize(data, first, Alpha, (byte)(first.AlphaMinimum + 1), first.AlphaMaximum, whole);
-            var maxRed = Maximize(data, first, Red, (byte)(first.RedMinimum + 1), first.RedMaximum, whole);
-            var maxGreen = Maximize(data, first, Green, (byte)(first.GreenMinimum + 1), first.GreenMaximum, whole);
-            var maxBlue = Maximize(data, first, Blue, (byte)(first.BlueMinimum + 1), first.BlueMaximum, whole);
+            var whole = Volume(first, moments);
+            var maxAlpha = Maximize(moments, first, Alpha, (byte)(first.AlphaMinimum + 1), first.AlphaMaximum, whole);
+            var maxRed = Maximize(moments, first, Red, (byte)(first.RedMinimum + 1), first.RedMaximum, whole);
+            var maxGreen = Maximize(moments, first, Green, (byte)(first.GreenMinimum + 1), first.GreenMaximum, whole);
+            var maxBlue = Maximize(moments, first, Blue, (byte)(first.BlueMinimum + 1), first.BlueMaximum, whole);
 
             if ((maxAlpha.Value >= maxRed.Value) && (maxAlpha.Value >= maxGreen.Value) && (maxAlpha.Value >= maxBlue.Value))
             {
@@ -288,9 +286,9 @@ namespace nQuant
             return true;
         }
 
-        private static float CalculateVariance(ColorData data, Box cube)
+        private static float CalculateVariance(ColorMoment[, , ,] moments, Box cube)
         {
-            ColorMoment volume = Volume(cube, data.Moments);
+            ColorMoment volume = Volume(cube, moments);
             return volume.Variance();
         }
 
@@ -357,7 +355,7 @@ namespace nQuant
                     moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMinimum, cube.BlueMinimum]);
         }
 
-        private Box[] SplitData(ref int colorCount, ColorData data)
+        private Box[] SplitData(ref int colorCount, ColorMoment[, , ,] moments)
         {
             --colorCount;
             var next = 0;
@@ -369,10 +367,10 @@ namespace nQuant
             cubes[0].BlueMaximum = MaxSideIndex;
             for (var cubeIndex = 1; cubeIndex < colorCount; ++cubeIndex)
             {
-                if (Cut(data, ref cubes[next], ref cubes[cubeIndex]))
+                if (Cut(moments, ref cubes[next], ref cubes[cubeIndex]))
                 {
-                    volumeVariance[next] = cubes[next].Size > 1 ? CalculateVariance(data, cubes[next]) : 0.0f;
-                    volumeVariance[cubeIndex] = cubes[cubeIndex].Size > 1 ? CalculateVariance(data, cubes[cubeIndex]) : 0.0f;
+                    volumeVariance[next] = cubes[next].Size > 1 ? CalculateVariance(moments, cubes[next]) : 0.0f;
+                    volumeVariance[cubeIndex] = cubes[cubeIndex].Size > 1 ? CalculateVariance(moments, cubes[cubeIndex]) : 0.0f;
                 }
                 else
                 {
@@ -397,13 +395,13 @@ namespace nQuant
             return cubes.Take(colorCount).ToArray();
         }
 
-        private Pixel[] BuildLookups(Box[] cubes, ColorData data)
+        private Pixel[] BuildLookups(Box[] cubes, ColorMoment[, , ,] moments)
         {
             Pixel[] lookups = new Pixel[cubes.Length];
 
             for (int cubeIndex = 0; cubeIndex < cubes.Length; cubeIndex++)
             {
-                var volume = Volume(cubes[cubeIndex], data.Moments);
+                var volume = Volume(cubes[cubeIndex], moments);
 
                 if (volume.Weight <= 0) continue;
 
