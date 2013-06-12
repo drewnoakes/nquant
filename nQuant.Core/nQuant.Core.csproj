@@ -75,7 +75,7 @@
     <Compile Include="CubeCut.cs" />
     <Compile Include="ImageBuffer.cs" />
     <Compile Include="IWuQuantizer.cs" />
-    <Compile Include="PaletteBuffer.cs" />
+    <Compile Include="PaletteColorHistory.cs" />
     <Compile Include="PaletteLookup.cs" />
     <Compile Include="Pixel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
