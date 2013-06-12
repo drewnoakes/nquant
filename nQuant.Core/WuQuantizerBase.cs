@@ -80,7 +80,10 @@ namespace nQuant
                             line.AddFast(ref moments[alphaIndex, redIndex, greenIndex, blueIndex]);
                             area[blueIndex].AddFast(ref line);
                             xarea[greenIndex, blueIndex].AddFast(ref area[blueIndex]);
-                            moments[alphaIndex, redIndex, greenIndex, blueIndex] = moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[greenIndex, blueIndex];
+
+                            ColorMoment moment = moments[alphaIndex - 1, redIndex, greenIndex, blueIndex];
+                            moment.AddFast(ref xarea[greenIndex, blueIndex]);
+                            moments[alphaIndex, redIndex, greenIndex, blueIndex] = moment;
                         }
                     }
                 }

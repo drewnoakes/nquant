@@ -8,15 +8,15 @@ namespace nQuant
     class PaletteLookup
     {
         private int mMask;
-        private Dictionary<int, List<LookupNode>> mLookup = new Dictionary<int, List<LookupNode>>(255);
-        private List<LookupNode> Palette { get; set; }
+        private Dictionary<int, LookupNode[]> mLookup;
+        private LookupNode[] Palette { get; set; }
 
-        public PaletteLookup(List<Pixel> palette)
+        public PaletteLookup(Pixel[] palette)
         {
-            Palette = new List<LookupNode>(palette.Count);
-            for(int paletteIndex = 0; paletteIndex < palette.Count; paletteIndex++)
+            Palette = new LookupNode[palette.Length];
+            for(int paletteIndex = 0; paletteIndex < palette.Length; paletteIndex++)
             {
-                Palette.Add(new LookupNode{Pixel = palette[paletteIndex], PaletteIndex = (byte)paletteIndex});
+                Palette[paletteIndex] = new LookupNode{Pixel = palette[paletteIndex], PaletteIndex = (byte)paletteIndex};
             }
             BuildLookup(palette);
         }
@@ -25,7 +25,7 @@ namespace nQuant
         {
             int pixelArgb = pixel.Argb;
             int pixelKey = pixelArgb & mMask;
-            List<LookupNode> bucket;
+            LookupNode[] bucket;
             if (!mLookup.TryGetValue(pixelKey, out bucket))
             {
                 if (!mLookup.TryGetValue(pixelArgb, out bucket))
@@ -34,16 +34,15 @@ namespace nQuant
                 }
             }
 
-            if (bucket.Count == 1)
+            if (bucket.Length == 1)
             {
                 return bucket[0].PaletteIndex;
             }
 
             int bestDistance = int.MaxValue;
             byte bestMatch = 0;
-            for (int lookupIndex = 0; lookupIndex < bucket.Count; lookupIndex++)
+            foreach(var lookup in bucket)
             {
-                var lookup = bucket[lookupIndex];
                 var lookupPixel = lookup.Pixel;
 
                 var deltaAlpha = pixel.Alpha - lookupPixel.Alpha;
@@ -68,32 +67,38 @@ namespace nQuant
             if (bucket == Palette)
             {
                 int key = (pixelKey == 0) ? pixelArgb : pixelKey;
-                mLookup[key] = new List<LookupNode> { bucket[bestMatch] };
+                mLookup[key] = new LookupNode[] { bucket[bestMatch] };
             }
             
             return bestMatch;
         }
 
-        private void BuildLookup(List<Pixel> palette)
+        private void BuildLookup(Pixel[] palette)
         {
             int mask = GetMask(palette);
+            Dictionary<int, List<LookupNode>> tempLookup = new Dictionary<int, List<LookupNode>>();
             foreach (LookupNode lookup in Palette)
             {
                 int pixelKey = lookup.Pixel.Argb & mask;
 
                 List<LookupNode> bucket;
-                if (!mLookup.TryGetValue(pixelKey, out bucket))
+                if (!tempLookup.TryGetValue(pixelKey, out bucket))
                 {
                     bucket = new List<LookupNode>();
-                    mLookup[pixelKey] = bucket;
+                    tempLookup[pixelKey] = bucket;
                 }
                 bucket.Add(lookup);
             }
 
+            mLookup = new Dictionary<int, LookupNode[]>(tempLookup.Count);
+            foreach (var key in tempLookup.Keys)
+            {
+                mLookup[key] = tempLookup[key].ToArray();
+            }
             mMask = mask;
         }
 
-        private static int GetMask(List<Pixel> palette)
+        private static int GetMask(Pixel[] palette)
         {
             IEnumerable<byte> alphas = from pixel in palette
                                        select pixel.Alpha;
@@ -117,7 +122,7 @@ namespace nQuant
 
             double totalUniques = uniqueAlphas + uniqueReds + uniqueGreens + uniqueBlues;
 
-            const double AvailableBits = 8f;
+            double AvailableBits = 1.0 + Math.Log(uniqueAlphas * uniqueReds * uniqueGreens * uniqueBlues);
 
             byte alphaMask = ComputeBitMask(maxAlpha, Convert.ToInt32(Math.Round(uniqueAlphas / totalUniques * AvailableBits)));
             byte redMask = ComputeBitMask(maxRed, Convert.ToInt32(Math.Round(uniqueReds / totalUniques * AvailableBits)));

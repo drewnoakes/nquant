@@ -10,7 +10,7 @@ namespace nQuant
         {
             int pixelsCount = image.Image.Width * image.Image.Height;
 
-            PaletteLookup lookup = new PaletteLookup(lookups);
+            PaletteLookup lookup = new PaletteLookup(lookups.ToArray());
             foreach (var pixelLine in image.PixelLines)
             {
                 for (int pixelIndex = 0; pixelIndex < pixelLine.Length; pixelIndex++)
