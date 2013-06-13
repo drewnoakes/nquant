@@ -70,15 +70,15 @@ namespace nQuant
         {
             var xarea = new ColorMoment[SideSize, SideSize];
             var area = new ColorMoment[SideSize];
-            for (var alphaIndex = 1; alphaIndex <= MaxSideIndex; ++alphaIndex)
+            for (var alphaIndex = 1; alphaIndex < SideSize; alphaIndex++)
             {
-                for (var redIndex = 1; redIndex <= MaxSideIndex; ++redIndex)
+                for (var redIndex = 1; redIndex < SideSize; redIndex++)
                 {
                     Array.Clear(area, 0, area.Length);
-                    for (var greenIndex = 1; greenIndex <= MaxSideIndex; ++greenIndex)
+                    for (var greenIndex = 1; greenIndex < SideSize; greenIndex++)
                     {
                         ColorMoment line = new ColorMoment();
-                        for (var blueIndex = 1; blueIndex <= MaxSideIndex; ++blueIndex)
+                        for (var blueIndex = 1; blueIndex < SideSize; blueIndex++)
                         {
                             line.AddFast(ref moments[alphaIndex, redIndex, greenIndex, blueIndex]);
                             area[blueIndex].AddFast(ref line);

@@ -46,24 +46,18 @@ namespace nQuant
             }
         }
 
-        public void UpdatePixelIndexes(IEnumerable<byte> indexes)
+        public void UpdatePixelIndexes(IEnumerable<byte[]> lineIndexes)
         {
             int width = this.Image.Width;
             int height = this.Image.Height;
-            byte[] buffer = new byte[width];
-            IEnumerator<byte> indexesIterator = indexes.GetEnumerator();
+            var indexesIterator = lineIndexes.GetEnumerator();
             for (int rowIndex = 0; rowIndex < height; rowIndex++)
             {
-                for (int columnIndex = 0; columnIndex < buffer.Length; columnIndex++)
-                {
-                    indexesIterator.MoveNext();
-                    buffer[columnIndex] = indexesIterator.Current;
-                }
-
+                indexesIterator.MoveNext();
                 BitmapData data = this.Image.LockBits(Rectangle.FromLTRB(0, rowIndex, width, rowIndex + 1), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
                 try
                 {
-                    Marshal.Copy(buffer, 0, data.Scan0, width);
+                    Marshal.Copy(indexesIterator.Current, 0, data.Scan0, width);
                 }
                 finally
                 {
