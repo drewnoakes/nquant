@@ -26,8 +26,8 @@ namespace nQuant
         public long[, , ,] MomentsBlue { get; private set; }
         public float[, , ,] Moments { get; private set; }
 
-        public IList<int> QuantizedPixels { get { return quantizedPixels; } }
-        public IList<Pixel> Pixels { get { return pixels; } }
+        public int[] QuantizedPixels { get { return quantizedPixels; } }
+        public Pixel[] Pixels { get { return pixels; } }
 
         public int PixelsCount { get { return pixels.Length; } }
         public void AddPixel(Pixel pixel, int quantizedPixel)
