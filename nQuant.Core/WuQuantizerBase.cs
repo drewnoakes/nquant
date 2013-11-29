@@ -79,6 +79,10 @@ namespace nQuant
 
         private static ColorData BuildHistogram(Bitmap sourceImage, byte alphaThreshold, byte alphaFader)
         {
+            var bitDepth = Image.GetPixelFormatSize(sourceImage.PixelFormat);
+            if (bitDepth != 32)
+                throw new QuantizationException(string.Format("The image you are attempting to quantize does not contain a 32 bit ARGB palette. This image has a bit depth of {0} with {1} colors.", bitDepth, sourceImage.Palette.Entries.Length));
+
             int bitmapWidth = sourceImage.Width;
             int bitmapHeight = sourceImage.Height;
 
@@ -86,13 +90,11 @@ namespace nQuant
                 Rectangle.FromLTRB(0, 0, bitmapWidth, bitmapHeight),
                 ImageLockMode.ReadOnly, 
                 sourceImage.PixelFormat);
-            ColorData colorData = new ColorData(MaxSideIndex, bitmapWidth, bitmapHeight);
+            
+            var colorData = new ColorData(MaxSideIndex, bitmapWidth, bitmapHeight);
 
             try
             {
-                var bitDepth = Image.GetPixelFormatSize(sourceImage.PixelFormat);
-                if (bitDepth != 32)
-                    throw new QuantizationException(string.Format("The image you are attempting to quantize does not contain a 32 bit ARGB palette. This image has a bit depth of {0} with {1} colors.", bitDepth, sourceImage.Palette.Entries.Length));
                 var byteLength = data.Stride < 0 ? -data.Stride : data.Stride;
                 var byteCount = Math.Max(1, bitDepth >> 3);
                 var offset = 0;
