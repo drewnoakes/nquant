@@ -12,11 +12,8 @@ namespace nQuant
             int imageSize = data.PixelsCount;
             LookupData lookups = BuildLookups(cubes, data);
 
-            IList<int> quantizedPixels = data.QuantizedPixels;
-            for (var index = 0; index < imageSize; ++index)
-            {
-                quantizedPixels[index] = 0;
-            }
+            Array.Clear(data.QuantizedPixels, 0, data.QuantizedPixels.Length);
+            int[] quantizedPixels = data.QuantizedPixels;
 
             var alphas = new int[colorCount + 1];
             var reds = new int[colorCount + 1];
