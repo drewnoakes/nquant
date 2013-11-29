@@ -9,6 +9,6 @@ namespace nQuant
             Lookups = new List<Lookup>();
         }
 
-        public IList<Lookup> Lookups { get; private set; }
+        public List<Lookup> Lookups { get; private set; }
     }
 }

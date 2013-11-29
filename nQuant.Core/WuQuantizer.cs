@@ -22,12 +22,12 @@ namespace nQuant
             var sums = new int[colorCount + 1];
             var palette = new QuantizedPalette(imageSize);
 
-            IList<Pixel> pixels = data.Pixels;
+            Pixel[] pixels = data.Pixels;
             int pixelsCount = data.PixelsCount;
-            IList<Lookup> lookupsList = lookups.Lookups;
+            List<Lookup> lookupsList = lookups.Lookups;
             int lookupsCount = lookupsList.Count;
 
-            Dictionary<int, int> cachedMatches = new Dictionary<int, int>();
+            var cachedMatches = new Dictionary<int, int>();
 
             for (int pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)
             {
