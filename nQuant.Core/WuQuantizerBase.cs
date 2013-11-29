@@ -97,7 +97,7 @@ namespace nQuant
             {
                 var bitDepth = Image.GetPixelFormatSize(sourceImage.PixelFormat);
                 if (bitDepth != 32)
-                    throw new QuantizationException(string.Format("Thie image you are attempting to quantize does not contain a 32 bit ARGB palette. This image has a bit depth of {0} with {1} colors.", bitDepth, sourceImage.Palette.Entries.Length));
+                    throw new QuantizationException(string.Format("The image you are attempting to quantize does not contain a 32 bit ARGB palette. This image has a bit depth of {0} with {1} colors.", bitDepth, sourceImage.Palette.Entries.Length));
                 var byteLength = data.Stride < 0 ? -data.Stride : data.Stride;
                 var byteCount = Math.Max(1, bitDepth >> 3);
                 var offset = 0;
