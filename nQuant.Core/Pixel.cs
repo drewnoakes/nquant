@@ -14,14 +14,14 @@ namespace nQuant
         }
 
         [FieldOffset(0)]
-        public byte Alpha;
+        public readonly byte Alpha;
         [FieldOffset(1)]
-        public byte Red;
+        public readonly byte Red;
         [FieldOffset(2)]
-        public byte Green;
+        public readonly byte Green;
         [FieldOffset(3)]
-        public byte Blue;
+        public readonly byte Blue;
         [FieldOffset(0)]
-        public int Argb;
+        public readonly int Argb;
     }
 }
