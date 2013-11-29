@@ -156,6 +156,13 @@ namespace nQuant
 
         private static ColorData CalculateMoments(ColorData data)
         {
+            var weights = data.Weights;
+            var momentsAlpha = data.MomentsAlpha;
+            var momentsRed = data.MomentsRed;
+            var momentsGreen = data.MomentsGreen;
+            var momentsBlue = data.MomentsBlue;
+            var moments = data.Moments;
+
             for (var alphaIndex = 1; alphaIndex <= MaxSideIndex; ++alphaIndex)
             {
                 var xarea = new long[SideSize, SideSize, SideSize];
@@ -182,12 +189,12 @@ namespace nQuant
                         var line2 = 0.0f;
                         for (var blueIndex = 1; blueIndex <= MaxSideIndex; ++blueIndex)
                         {
-                            line += data.Weights[alphaIndex, redIndex, greenIndex, blueIndex];
-                            lineAlpha += data.MomentsAlpha[alphaIndex, redIndex, greenIndex, blueIndex];
-                            lineRed += data.MomentsRed[alphaIndex, redIndex, greenIndex, blueIndex];
-                            lineGreen += data.MomentsGreen[alphaIndex, redIndex, greenIndex, blueIndex];
-                            lineBlue += data.MomentsBlue[alphaIndex, redIndex, greenIndex, blueIndex];
-                            line2 += data.Moments[alphaIndex, redIndex, greenIndex, blueIndex];
+                            line += weights[alphaIndex, redIndex, greenIndex, blueIndex];
+                            lineAlpha += momentsAlpha[alphaIndex, redIndex, greenIndex, blueIndex];
+                            lineRed += momentsRed[alphaIndex, redIndex, greenIndex, blueIndex];
+                            lineGreen += momentsGreen[alphaIndex, redIndex, greenIndex, blueIndex];
+                            lineBlue += momentsBlue[alphaIndex, redIndex, greenIndex, blueIndex];
+                            line2 += moments[alphaIndex, redIndex, greenIndex, blueIndex];
 
                             area[blueIndex] += line;
                             areaAlpha[blueIndex] += lineAlpha;
@@ -203,12 +210,12 @@ namespace nQuant
                             xareaBlue[redIndex, greenIndex, blueIndex] = xareaBlue[redIndex - 1, greenIndex, blueIndex] + areaBlue[blueIndex];
                             xarea2[redIndex, greenIndex, blueIndex] = xarea2[redIndex - 1, greenIndex, blueIndex] + area2[blueIndex];
 
-                            data.Weights[alphaIndex, redIndex, greenIndex, blueIndex] = data.Weights[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[redIndex, greenIndex, blueIndex];
-                            data.MomentsAlpha[alphaIndex, redIndex, greenIndex, blueIndex] = data.MomentsAlpha[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaAlpha[redIndex, greenIndex, blueIndex];
-                            data.MomentsRed[alphaIndex, redIndex, greenIndex, blueIndex] = data.MomentsRed[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaRed[redIndex, greenIndex, blueIndex];
-                            data.MomentsGreen[alphaIndex, redIndex, greenIndex, blueIndex] = data.MomentsGreen[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaGreen[redIndex, greenIndex, blueIndex];
-                            data.MomentsBlue[alphaIndex, redIndex, greenIndex, blueIndex] = data.MomentsBlue[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaBlue[redIndex, greenIndex, blueIndex];
-                            data.Moments[alphaIndex, redIndex, greenIndex, blueIndex] = data.Moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea2[redIndex, greenIndex, blueIndex];
+                            weights[alphaIndex, redIndex, greenIndex, blueIndex] = weights[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea[redIndex, greenIndex, blueIndex];
+                            momentsAlpha[alphaIndex, redIndex, greenIndex, blueIndex] = momentsAlpha[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaAlpha[redIndex, greenIndex, blueIndex];
+                            momentsRed[alphaIndex, redIndex, greenIndex, blueIndex] = momentsRed[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaRed[redIndex, greenIndex, blueIndex];
+                            momentsGreen[alphaIndex, redIndex, greenIndex, blueIndex] = momentsGreen[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaGreen[redIndex, greenIndex, blueIndex];
+                            momentsBlue[alphaIndex, redIndex, greenIndex, blueIndex] = momentsBlue[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xareaBlue[redIndex, greenIndex, blueIndex];
+                            moments[alphaIndex, redIndex, greenIndex, blueIndex] = moments[alphaIndex - 1, redIndex, greenIndex, blueIndex] + xarea2[redIndex, greenIndex, blueIndex];
                         }
                     }
                 }
