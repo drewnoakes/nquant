@@ -4,6 +4,6 @@ namespace nQuant
 {
     public interface IWuQuantizer
     {
-        Image QuantizeImage(Bitmap image, int alphaThreshold, int alphaFader);
+        Image QuantizeImage(Bitmap image, byte alphaThreshold, byte alphaFader);
     }
 }

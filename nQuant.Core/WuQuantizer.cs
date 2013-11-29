@@ -6,7 +6,7 @@ namespace nQuant
 {
     public class WuQuantizer : WuQuantizerBase, IWuQuantizer
     {
-        protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold)
+        protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, byte alphaThreshold)
         {
             int imageSize = data.PixelsCount;
             LookupData lookups = BuildLookups(cubes, data);

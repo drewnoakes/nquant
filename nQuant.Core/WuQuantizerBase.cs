@@ -22,7 +22,7 @@ namespace nQuant
             return QuantizeImage(image, 10, 70);
         }
 
-        public Image QuantizeImage(Bitmap image, int alphaThreshold, int alphaFader)
+        public Image QuantizeImage(Bitmap image, byte alphaThreshold, byte alphaFader)
         {
             var colorCount = MaxColor;
             var data = BuildHistogram(image, alphaThreshold, alphaFader);
@@ -82,7 +82,7 @@ namespace nQuant
             return result;
         }
 
-        private static ColorData BuildHistogram(Bitmap sourceImage, int alphaThreshold, int alphaFader)
+        private static ColorData BuildHistogram(Bitmap sourceImage, byte alphaThreshold, byte alphaFader)
         {
             int bitmapWidth = sourceImage.Width;
             int bitmapHeight = sourceImage.Height;
@@ -568,6 +568,6 @@ namespace nQuant
             return lookups;
         }
 
-        protected abstract QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, int alphaThreshold);
+        protected abstract QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, byte alphaThreshold);
     }
 }

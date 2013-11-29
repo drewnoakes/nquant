@@ -8,8 +8,8 @@ namespace nQuant
 {
     public static class nQuant
     {
-        private static int alphaTransparency = 10;
-        private static int alphaFader = 70;
+        private static byte alphaTransparency = 10;
+        private static byte alphaFader = 70;
         private static string targetPath = string.Empty;
 
         public static void Main(string[] args)
@@ -69,7 +69,7 @@ namespace nQuant
                     switch (currentArg)
                     {
                         case "T":
-                            if (index >= args.Length - 1 || !Int32.TryParse(args[index + 1], out alphaTransparency))
+                            if (index >= args.Length - 1 || !Byte.TryParse(args[index + 1], out alphaTransparency))
                             {
                                PrintUsage();
                                 Environment.Exit(1);
@@ -77,7 +77,7 @@ namespace nQuant
                             break;
 
                         case "F":
-                            if (index >= args.Length - 1 || !Int32.TryParse(args[index + 1], out alphaFader))
+                            if (index >= args.Length - 1 || !Byte.TryParse(args[index + 1], out alphaFader))
                             {
                                 PrintUsage();
                                 Environment.Exit(1);
