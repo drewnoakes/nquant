@@ -2,9 +2,10 @@ namespace nQuant
 {
     public class ColorData
     {
-        public ColorData(int dataGranularity, int bitmapWidth, int bitmapHeight)
+        public ColorData(byte dataGranularity, int bitmapWidth, int bitmapHeight)
         {
-            dataGranularity++;
+            checked { dataGranularity++; }
+
             Weights = new long[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
             MomentsAlpha = new long[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
             MomentsRed = new long[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
@@ -12,9 +13,12 @@ namespace nQuant
             MomentsBlue = new long[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
             Moments = new float[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
 
-            int pixelCount = bitmapWidth*bitmapHeight;
-            pixels = new Pixel[pixelCount];
-            quantizedPixels = new int[pixelCount];
+            checked
+            {
+                int pixelCount = bitmapWidth*bitmapHeight;
+                pixels = new Pixel[pixelCount];
+                quantizedPixels = new int[pixelCount];
+            }
         }
 
         public long[, , ,] Weights { get; private set; }
