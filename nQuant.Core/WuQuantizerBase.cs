@@ -17,12 +17,7 @@ namespace nQuant
         private const int SideSize = 33;
         private const int MaxSideIndex = 32;
 
-        public Image QuantizeImage(Bitmap image)
-        {
-            return QuantizeImage(image, 10, 70);
-        }
-
-        public Image QuantizeImage(Bitmap image, byte alphaThreshold, byte alphaFader)
+        public Image QuantizeImage(Bitmap image, byte alphaThreshold = 10, byte alphaFader = 70)
         {
             var colorCount = MaxColor;
             var data = BuildHistogram(image, alphaThreshold, alphaFader);
