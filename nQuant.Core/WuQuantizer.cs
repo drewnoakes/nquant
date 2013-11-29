@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 
 namespace nQuant
@@ -14,8 +15,7 @@ namespace nQuant
             IList<int> quantizedPixels = data.QuantizedPixels;
             for (var index = 0; index < imageSize; ++index)
             {
-                var indexParts = BitConverter.GetBytes(quantizedPixels[index]);
-                quantizedPixels[index] = lookups.Tags[indexParts[Alpha], indexParts[Red], indexParts[Green], indexParts[Blue]];
+                quantizedPixels[index] = 0;
             }
 
             var alphas = new int[colorCount + 1];

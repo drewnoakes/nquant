@@ -533,25 +533,10 @@ namespace nQuant
 
         protected LookupData BuildLookups(IEnumerable<Box> cubes, ColorData data)
         {
-            LookupData lookups = new LookupData(SideSize);
-            int lookupsCount = lookups.Lookups.Count;
+            var lookups = new LookupData();
 
             foreach (var cube in cubes)
             {
-                for (var alphaIndex = (byte)(cube.AlphaMinimum + 1); alphaIndex <= cube.AlphaMaximum; ++alphaIndex)
-                {
-                    for (var redIndex = (byte)(cube.RedMinimum + 1); redIndex <= cube.RedMaximum; ++redIndex)
-                    {
-                        for (var greenIndex = (byte)(cube.GreenMinimum + 1); greenIndex <= cube.GreenMaximum; ++greenIndex)
-                        {
-                            for (var blueIndex = (byte)(cube.BlueMinimum + 1); blueIndex <= cube.BlueMaximum; ++blueIndex)
-                            {
-                                lookups.Tags[alphaIndex, redIndex, greenIndex, blueIndex] = lookupsCount;
-                            }
-                        }
-                    }
-                }
-
                 var weight = Volume(cube, data.Weights);
 
                 if (weight <= 0) continue;
