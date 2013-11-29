@@ -14,9 +14,9 @@ namespace nQuant
             MomentsBlue = new long[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
             Moments = new float[dataGranularity, dataGranularity, dataGranularity, dataGranularity];
 
-            pixelsCount = bitmapWidth*bitmapHeight;
-            pixels = new Pixel[pixelsCount];
-            quantizedPixels = new int[pixelsCount];
+            int pixelCount = bitmapWidth*bitmapHeight;
+            pixels = new Pixel[pixelCount];
+            quantizedPixels = new int[pixelCount];
         }
 
         public long[, , ,] Weights { get; private set; }
@@ -36,9 +36,8 @@ namespace nQuant
             quantizedPixels[pixelFillingCounter++] = quantizedPixel;
         }
 
-        private Pixel[] pixels;
-        private int[] quantizedPixels;
-        private int pixelsCount;
+        private readonly Pixel[] pixels;
+        private readonly int[] quantizedPixels;
         private int pixelFillingCounter;
     }
 }
