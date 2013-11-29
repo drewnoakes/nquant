@@ -363,7 +363,7 @@ namespace nQuant
             return new CubeCut(cutPoint, result);
         }
 
-        private bool Cut(ColorData data, ref Box first,ref Box second)
+        private static bool Cut(ColorData data, ref Box first,ref Box second)
         {
             int direction;
             var wholeAlpha = Volume(first, data.MomentsAlpha);
@@ -491,7 +491,7 @@ namespace nQuant
                     moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMinimum, cube.BlueMinimum]);
         }
 
-        private IEnumerable<Box> SplitData(ref int colorCount, ColorData data)
+        private static IEnumerable<Box> SplitData(ref int colorCount, ColorData data)
         {
             --colorCount;
             var next = 0;
