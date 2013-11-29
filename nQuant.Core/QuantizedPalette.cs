@@ -1,16 +1,16 @@
-using System.Collections.Generic;
 using System.Drawing;
 
 namespace nQuant
 {
     public class QuantizedPalette
     {
-        public QuantizedPalette(int size)
+        public QuantizedPalette(int size, int colorCount)
         {
-            Colors = new List<Color>();
+            Colors = new Color[colorCount];
             PixelIndex = new int[size];
         }
-        public IList<Color> Colors { get; private set; }
+
+        public Color[] Colors { get; private set; }
         public int[] PixelIndex { get; private set; }
     }
 }

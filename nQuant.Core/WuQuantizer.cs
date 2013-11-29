@@ -19,7 +19,7 @@ namespace nQuant
             var greens = new int[colorCount + 1];
             var blues = new int[colorCount + 1];
             var sums = new int[colorCount + 1];
-            var palette = new QuantizedPalette(imageSize);
+            var palette = new QuantizedPalette(imageSize, colorCount + 1);
 
             Pixel[] pixels = data.Pixels;
             int pixelsCount = data.PixelsCount;
@@ -84,10 +84,10 @@ namespace nQuant
                 }
 
                 var color = Color.FromArgb(alphas[paletteIndex], reds[paletteIndex], greens[paletteIndex], blues[paletteIndex]);
-                palette.Colors.Add(color);
+                palette.Colors[paletteIndex] = color;
             }
 
-            palette.Colors.Add(Color.FromArgb(0, 0, 0, 0));
+            palette.Colors[colorCount] = Color.FromArgb(0, 0, 0, 0);
 
             return palette;
         }

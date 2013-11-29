@@ -31,7 +31,7 @@ namespace nQuant
         {
             var result = new Bitmap(sourceImage.Width, sourceImage.Height, PixelFormat.Format8bppIndexed);
             var newPalette = result.Palette;
-            for (var index = 0; index < palette.Colors.Count; index++)
+            for (var index = 0; index < palette.Colors.Length; index++)
                 newPalette.Entries[index] = palette.Colors[index];
             result.Palette = newPalette;
 
@@ -54,7 +54,7 @@ namespace nQuant
                     for (var x = 0; x < result.Width; x++)
                     {
                         var targetIndexOffset = targetIndex >> 3;
-                        targetValue[0] = (byte)(palette.PixelIndex[pixelIndex] == -1 ? palette.Colors.Count - 1 : palette.PixelIndex[pixelIndex]);
+                        targetValue[0] = (byte)(palette.PixelIndex[pixelIndex] == -1 ? palette.Colors.Length - 1 : palette.PixelIndex[pixelIndex]);
                         pixelIndex++;
 
                         for (var valueIndex = 0; valueIndex < targetByteCount; valueIndex++)
