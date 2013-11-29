@@ -30,7 +30,7 @@ namespace nQuant
             IList<Lookup> lookupsList = lookups.Lookups;
             int lookupsCount = lookupsList.Count;
 
-            Dictionary<int, int> cachedMaches = new Dictionary<int, int>();
+            Dictionary<int, int> cachedMatches = new Dictionary<int, int>();
 
             for (int pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)
             {
@@ -42,7 +42,7 @@ namespace nQuant
                 int bestMatch;
                 int argb = pixel.Argb;
 
-                if (!cachedMaches.TryGetValue(argb, out bestMatch))
+                if (!cachedMatches.TryGetValue(argb, out bestMatch))
                 {
                     int match = quantizedPixels[pixelIndex];
                     bestMatch = match;
@@ -65,7 +65,7 @@ namespace nQuant
                         bestMatch = lookupIndex;
                     }
 
-                    cachedMaches[argb] = bestMatch;
+                    cachedMatches[argb] = bestMatch;
                 }
 
                 alphas[bestMatch] += pixel.Alpha;
