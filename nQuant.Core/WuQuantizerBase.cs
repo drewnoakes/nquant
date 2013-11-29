@@ -163,22 +163,40 @@ namespace nQuant
             var momentsBlue = data.MomentsBlue;
             var moments = data.Moments;
 
+            var xarea = new long[SideSize, SideSize, SideSize];
+            var xareaAlpha = new long[SideSize, SideSize, SideSize];
+            var xareaRed = new long[SideSize, SideSize, SideSize];
+            var xareaGreen = new long[SideSize, SideSize, SideSize];
+            var xareaBlue = new long[SideSize, SideSize, SideSize];
+            var xarea2 = new float[SideSize, SideSize, SideSize];
+
+            var area = new long[SideSize];
+            var areaAlpha = new long[SideSize];
+            var areaRed = new long[SideSize];
+            var areaGreen = new long[SideSize];
+            var areaBlue = new long[SideSize];
+            var area2 = new float[SideSize];
+
+            const int sideSizeCubed = SideSize*SideSize*SideSize;
+
             for (var alphaIndex = 1; alphaIndex <= MaxSideIndex; ++alphaIndex)
             {
-                var xarea = new long[SideSize, SideSize, SideSize];
-                var xareaAlpha = new long[SideSize, SideSize, SideSize];
-                var xareaRed = new long[SideSize, SideSize, SideSize];
-                var xareaGreen = new long[SideSize, SideSize, SideSize];
-                var xareaBlue = new long[SideSize, SideSize, SideSize];
-                var xarea2 = new float[SideSize, SideSize, SideSize];
+                Array.Clear(xarea, 0, sideSizeCubed);
+                Array.Clear(xareaAlpha, 0, sideSizeCubed);
+                Array.Clear(xareaRed, 0, sideSizeCubed);
+                Array.Clear(xareaGreen, 0, sideSizeCubed);
+                Array.Clear(xareaBlue, 0, sideSizeCubed);
+                Array.Clear(xarea2, 0, sideSizeCubed);
+
                 for (var redIndex = 1; redIndex <= MaxSideIndex; ++redIndex)
                 {
-                    var area = new long[SideSize];
-                    var areaAlpha = new long[SideSize];
-                    var areaRed = new long[SideSize];
-                    var areaGreen = new long[SideSize];
-                    var areaBlue = new long[SideSize];
-                    var area2 = new float[SideSize];
+                    Array.Clear(area, 0, SideSize);
+                    Array.Clear(areaAlpha, 0, SideSize);
+                    Array.Clear(areaRed, 0, SideSize);
+                    Array.Clear(areaGreen, 0, SideSize);
+                    Array.Clear(areaBlue, 0, SideSize);
+                    Array.Clear(area2, 0, SideSize);
+
                     for (var greenIndex = 1; greenIndex <= MaxSideIndex; ++greenIndex)
                     {
                         long line = 0;
