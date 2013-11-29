@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace nQuant
 {
-    public class nQuant
+    public static class nQuant
     {
         private static int alphaTransparency = 10;
         private static int alphaFader = 70;
