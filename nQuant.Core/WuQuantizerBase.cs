@@ -123,10 +123,10 @@ namespace nQuant
 
                         if (value[Alpha] > alphaThreshold)
                         {
-                            if (value[Alpha] < 255)
+                            if (value[Alpha] < byte.MaxValue)
                             {
                                 var alpha = value[Alpha] + (value[Alpha] % alphaFader);
-                                value[Alpha] = (byte)(alpha > 255 ? 255 : alpha);
+                                value[Alpha] = (byte)(alpha > byte.MaxValue ? byte.MaxValue : alpha);
                                 indexAlpha = (byte)((value[Alpha] >> 3) + 1);
                             }
 
