@@ -531,7 +531,7 @@ namespace nQuant
             return cubes.Take(colorCount).ToList();
         }
 
-        protected LookupData BuildLookups(IEnumerable<Box> cubes, ColorData data)
+        protected static LookupData BuildLookups(IEnumerable<Box> cubes, ColorData data)
         {
             var lookups = new LookupData();
 
