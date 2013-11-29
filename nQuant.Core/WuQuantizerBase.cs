@@ -38,7 +38,10 @@ namespace nQuant
             BitmapData targetData = null;
             try
             {
-                targetData = result.LockBits(Rectangle.FromLTRB(0, 0, result.Width, result.Height), ImageLockMode.WriteOnly, result.PixelFormat);
+                var resultHeight = result.Height;
+                var resultWidth = result.Width;
+
+                targetData = result.LockBits(Rectangle.FromLTRB(0, 0, resultWidth, resultHeight), ImageLockMode.WriteOnly, result.PixelFormat);
                 const byte targetBitDepth = 8;
                 var targetByteLength = targetData.Stride < 0 ? -targetData.Stride : targetData.Stride;
                 var targetByteCount = Math.Max(1, targetBitDepth >> 3);
@@ -48,10 +51,10 @@ namespace nQuant
                 var targetValue = new byte[targetByteCount];
                 var pixelIndex = 0;
 
-                for (var y = 0; y < result.Height; y++)
+                for (var y = 0; y < resultHeight; y++)
                 {
                     var targetIndex = 0;
-                    for (var x = 0; x < result.Width; x++)
+                    for (var x = 0; x < resultWidth; x++)
                     {
                         var targetIndexOffset = targetIndex >> 3;
                         targetValue[0] = (byte)(palette.PixelIndex[pixelIndex] == -1 ? palette.Colors.Length - 1 : palette.PixelIndex[pixelIndex]);
