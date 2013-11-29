@@ -9,7 +9,7 @@ namespace nQuant
         protected override QuantizedPalette GetQuantizedPalette(int colorCount, ColorData data, IEnumerable<Box> cubes, byte alphaThreshold)
         {
             int imageSize = data.PixelsCount;
-            LookupData lookups = BuildLookups(cubes, data);
+            List<Lookup> lookups = BuildLookups(cubes, data);
 
             Array.Clear(data.QuantizedPixels, 0, data.QuantizedPixels.Length);
             int[] quantizedPixels = data.QuantizedPixels;
@@ -23,8 +23,7 @@ namespace nQuant
 
             Pixel[] pixels = data.Pixels;
             int pixelsCount = data.PixelsCount;
-            List<Lookup> lookupsList = lookups.Lookups;
-            int lookupsCount = lookupsList.Count;
+            int lookupsCount = lookups.Count;
 
             var cachedMatches = new Dictionary<int, int>();
 
@@ -46,7 +45,7 @@ namespace nQuant
 
                     for (int lookupIndex = 0; lookupIndex < lookupsCount; lookupIndex++)
                     {
-                        Lookup lookup = lookupsList[lookupIndex];
+                        Lookup lookup = lookups[lookupIndex];
                         var deltaAlpha = pixel.Alpha - lookup.Alpha;
                         var deltaRed = pixel.Red - lookup.Red;
                         var deltaGreen = pixel.Green - lookup.Green;

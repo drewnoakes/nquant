@@ -556,9 +556,9 @@ namespace nQuant
             return cubes.Take(colorCount).ToList();
         }
 
-        protected static LookupData BuildLookups(IEnumerable<Box> cubes, ColorData data)
+        protected static List<Lookup> BuildLookups(IEnumerable<Box> cubes, ColorData data)
         {
-            var lookups = new LookupData();
+            var lookups = new List<Lookup>();
 
             foreach (var cube in cubes)
             {
@@ -573,7 +573,7 @@ namespace nQuant
                         Green = (int) (Volume(cube, data.MomentsGreen)/weight),
                         Blue = (int) (Volume(cube, data.MomentsBlue)/weight)
                     };
-                lookups.Lookups.Add(lookup);
+                lookups.Add(lookup);
             }
             return lookups;
         }
