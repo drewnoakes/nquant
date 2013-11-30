@@ -17,7 +17,7 @@ namespace nQuant
             {
                 int pixelCount = bitmapWidth*bitmapHeight;
                 pixels = new Pixel[pixelCount];
-                quantizedPixels = new int[pixelCount];
+                quantizedPixels = new Pixel[pixelCount];
             }
         }
 
@@ -28,18 +28,18 @@ namespace nQuant
         public long[, , ,] MomentsBlue { get; private set; }
         public float[, , ,] Moments { get; private set; }
 
-        public int[] QuantizedPixels { get { return quantizedPixels; } }
+        public Pixel[] QuantizedPixels { get { return quantizedPixels; } }
         public Pixel[] Pixels { get { return pixels; } }
 
         public int PixelsCount { get { return pixels.Length; } }
-        public void AddPixel(Pixel pixel, int quantizedPixel)
+        public void AddPixel(Pixel pixel, Pixel quantizedPixel)
         {
             pixels[pixelFillingCounter] = pixel;
             quantizedPixels[pixelFillingCounter++] = quantizedPixel;
         }
 
         private readonly Pixel[] pixels;
-        private readonly int[] quantizedPixels;
+        private readonly Pixel[] quantizedPixels;
         private int pixelFillingCounter;
     }
 }

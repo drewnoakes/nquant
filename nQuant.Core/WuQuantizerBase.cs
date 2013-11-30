@@ -143,7 +143,7 @@ namespace nQuant
 
                         colorData.AddPixel(
                             new Pixel(value[Alpha], value[Red], value[Green], value[Blue]),
-                            BitConverter.ToInt32 (new[] { indexAlpha, indexRed, indexGreen, indexBlue }, 0));
+                            new Pixel(indexAlpha, indexRed, indexGreen, indexBlue));
                         index += bitDepth;
                     }
 

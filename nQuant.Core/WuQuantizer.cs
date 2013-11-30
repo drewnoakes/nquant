@@ -12,7 +12,7 @@ namespace nQuant
             List<Lookup> lookups = BuildLookups(cubes, data);
 
             Array.Clear(data.QuantizedPixels, 0, data.QuantizedPixels.Length);
-            int[] quantizedPixels = data.QuantizedPixels;
+            var quantizedPixels = data.QuantizedPixels;
 
             var alphas = new int[colorCount + 1];
             var reds = new int[colorCount + 1];
@@ -39,7 +39,7 @@ namespace nQuant
 
                 if (!cachedMatches.TryGetValue(argb, out bestMatch))
                 {
-                    int match = quantizedPixels[pixelIndex];
+                    int match = quantizedPixels[pixelIndex].Argb;
                     bestMatch = match;
                     int bestDistance = int.MaxValue;
 
