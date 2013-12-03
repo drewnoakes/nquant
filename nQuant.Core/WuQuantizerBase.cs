@@ -26,7 +26,6 @@ namespace nQuant
 
     public abstract class WuQuantizerBase
     {
-        private const int MaxColor = 256;
         protected const byte AlphaColor = 255;
         protected const int Alpha = 3;
         protected const int Red = 2;
@@ -42,22 +41,23 @@ namespace nQuant
 
         public Image QuantizeImage(Bitmap image, int alphaThreshold, int alphaFader)
         {
-            return QuantizeImage(image, alphaThreshold, alphaFader, null);
+            return QuantizeImage(image, alphaThreshold, alphaFader, null, 256);
         }
 
-        public Image QuantizeImage(Bitmap image, int alphaThreshold, int alphaFader, Histogram histogram)
+        public Image QuantizeImage(Bitmap image, int alphaThreshold, int alphaFader, Histogram histogram, int maxColors)
         {
-            var colorCount = MaxColor;
             var buffer = new ImageBuffer(image);
+
             if (histogram == null)
                 histogram = new Histogram();
             else
                 histogram.Clear();
+
             BuildHistogram(histogram, buffer, alphaThreshold, alphaFader);
             CalculateMoments(histogram.Moments);
-            var cubes = SplitData(ref colorCount, histogram.Moments);
+            var cubes = SplitData(ref maxColors, histogram.Moments);
             var lookups = BuildLookups(cubes, histogram.Moments);
-            return GetQuantizedImage(buffer, colorCount, lookups, alphaThreshold);
+            return GetQuantizedImage(buffer, maxColors, lookups, alphaThreshold);
         }
 
         private static void BuildHistogram(Histogram histogram, ImageBuffer sourceImage, int alphaThreshold, int alphaFader)
@@ -344,8 +344,8 @@ namespace nQuant
         {
             --colorCount;
             var next = 0;
-            var volumeVariance = new float[MaxColor];
-            var cubes = new Box[MaxColor];
+            var volumeVariance = new float[colorCount];
+            var cubes = new Box[colorCount];
             cubes[0].AlphaMaximum = MaxSideIndex;
             cubes[0].RedMaximum = MaxSideIndex;
             cubes[0].GreenMaximum = MaxSideIndex;
