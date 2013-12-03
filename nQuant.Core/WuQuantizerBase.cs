@@ -7,6 +7,23 @@ using System.Runtime.InteropServices;
 
 namespace nQuant
 {
+    public class Histogram
+    {
+        private const int SideSize = 33;
+        internal readonly ColorMoment[, , ,] Moments;
+
+        public Histogram()
+        {
+            // 47,436,840 bytes
+            Moments = new ColorMoment[SideSize, SideSize, SideSize, SideSize];
+        }
+
+        internal void Clear()
+        {
+            Array.Clear(Moments, 0, SideSize*SideSize*SideSize*SideSize);
+        }
+    }
+
     public abstract class WuQuantizerBase
     {
         private const int MaxColor = 256;
@@ -25,18 +42,28 @@ namespace nQuant
 
         public Image QuantizeImage(Bitmap image, int alphaThreshold, int alphaFader)
         {
+            return QuantizeImage(image, alphaThreshold, alphaFader, null);
+        }
+
+        public Image QuantizeImage(Bitmap image, int alphaThreshold, int alphaFader, Histogram histogram)
+        {
             var colorCount = MaxColor;
             ImageBuffer buffer = new ImageBuffer(image);
-            var moments = BuildHistogram(buffer, alphaThreshold, alphaFader);
-            CalculateMoments(moments);
-            var cubes = SplitData(ref colorCount, moments);
-            var lookups = BuildLookups(cubes, moments);
+            if (histogram == null)
+                histogram = new Histogram();
+            else
+                histogram.Clear();
+            BuildHistogram(histogram, buffer, alphaThreshold, alphaFader);
+            CalculateMoments(histogram.Moments);
+            var cubes = SplitData(ref colorCount, histogram.Moments);
+            var lookups = BuildLookups(cubes, histogram.Moments);
             return GetQuantizedImage(buffer, colorCount, lookups, alphaThreshold);
         }
 
-        private static ColorMoment[, , ,] BuildHistogram(ImageBuffer sourceImage, int alphaThreshold, int alphaFader)
+        private static void BuildHistogram(Histogram histogram, ImageBuffer sourceImage, int alphaThreshold, int alphaFader)
         {
-            var moments = new ColorMoment[SideSize, SideSize, SideSize, SideSize];
+            var moments = histogram.Moments;
+
             foreach(var pixelLine in sourceImage.PixelLines)
             {
                 for (int pixelIndex = 0; pixelIndex < pixelLine.Length; pixelIndex++)
@@ -62,8 +89,8 @@ namespace nQuant
                     }
                 }
             }
-            
-            return moments;
+
+            return;
         }
 
         private static void CalculateMoments(ColorMoment[, , ,] moments)
