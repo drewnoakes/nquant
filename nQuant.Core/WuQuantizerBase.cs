@@ -99,7 +99,7 @@ namespace nQuant
                     Array.Clear(area, 0, area.Length);
                     for (var greenIndex = 1; greenIndex < SideSize; greenIndex++)
                     {
-                        ColorMoment line = new ColorMoment();
+                        var line = new ColorMoment();
                         for (var blueIndex = 1; blueIndex < SideSize; blueIndex++)
                         {
                             line.AddFast(ref moments[alphaIndex, redIndex, greenIndex, blueIndex]);
