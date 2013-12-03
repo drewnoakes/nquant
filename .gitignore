@@ -16,3 +16,6 @@ glob:nQuant.Core\Nuget\Tools
 glob:nQuant.Core\Nuget\Lib
 glob:BuildFiles
 glob:packages
+bin/
+obj/
+*.user
