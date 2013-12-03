@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 namespace nQuant
 {
@@ -12,28 +13,28 @@ namespace nQuant
             Green = green;
             Blue = blue;
 
-            System.Diagnostics.Debug.Assert(Argb == (alpha << 24 | red << 16 | green << 8 | blue));
+            Debug.Assert(Argb == (alpha << 24 | red << 16 | green << 8 | blue));
         }
 
         public Pixel(int argb)
             : this()
         {
             Argb = argb;
-            System.Diagnostics.Debug.Assert(Alpha == ((uint)argb >> 24));
-            System.Diagnostics.Debug.Assert(Red == ((uint)(argb >> 16) & 255));
-            System.Diagnostics.Debug.Assert(Green == ((uint)(argb >> 8) & 255));
-            System.Diagnostics.Debug.Assert(Blue == ((uint)argb & 255));
+            Debug.Assert(Alpha == ((uint)argb >> 24));
+            Debug.Assert(Red == ((uint)(argb >> 16) & 255));
+            Debug.Assert(Green == ((uint)(argb >> 8) & 255));
+            Debug.Assert(Blue == ((uint)argb & 255));
         }
 
-        [FieldOffsetAttribute(3)]
+        [FieldOffset(3)]
         public byte Alpha;
-        [FieldOffsetAttribute(2)]
+        [FieldOffset(2)]
         public byte Red;
-        [FieldOffsetAttribute(1)]
+        [FieldOffset(1)]
         public byte Green;
-        [FieldOffsetAttribute(0)]
+        [FieldOffset(0)]
         public byte Blue;
-        [FieldOffsetAttribute(0)]
+        [FieldOffset(0)]
         public int Argb;
 
         public override string ToString()
