@@ -9,7 +9,7 @@ namespace nQuant
         private static IEnumerable<byte[]> IndexedPixels(ImageBuffer image, Pixel[] lookups, int alphaThreshold, PaletteColorHistory[] paletteHistogram)
         {
             var lineIndexes = new byte[image.Image.Width];
-            PaletteLookup lookup = new PaletteLookup(lookups);
+            var lookup = new PaletteLookup(lookups);
             foreach (var pixelLine in image.PixelLines)
             {
                 for (int pixelIndex = 0; pixelIndex < pixelLine.Length; pixelIndex++)
