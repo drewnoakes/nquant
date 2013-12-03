@@ -86,8 +86,6 @@ namespace nQuant
                     }
                 }
             }
-
-            return;
         }
 
         private static void CalculateMoments(ColorMoment[, , ,] moments)
