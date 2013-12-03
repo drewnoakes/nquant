@@ -48,7 +48,7 @@ namespace nQuant
         public Image QuantizeImage(Bitmap image, int alphaThreshold, int alphaFader, Histogram histogram)
         {
             var colorCount = MaxColor;
-            ImageBuffer buffer = new ImageBuffer(image);
+            var buffer = new ImageBuffer(image);
             if (histogram == null)
                 histogram = new Histogram();
             else
