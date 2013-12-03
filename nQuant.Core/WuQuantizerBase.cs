@@ -247,7 +247,7 @@ namespace nQuant
             return new CubeCut(cutPoint, result);
         }
 
-        private bool Cut(ColorMoment[, , ,] moments, ref Box first, ref Box second)
+        private static bool Cut(ColorMoment[, , ,] moments, ref Box first, ref Box second)
         {
             int direction;
             var whole = Volume(first, moments);
@@ -340,7 +340,7 @@ namespace nQuant
                     moment[cube.AlphaMinimum, cube.RedMinimum, cube.GreenMinimum, cube.BlueMinimum]);
         }
 
-        private Box[] SplitData(ref int colorCount, ColorMoment[, , ,] moments)
+        private static Box[] SplitData(ref int colorCount, ColorMoment[, , ,] moments)
         {
             --colorCount;
             var next = 0;
@@ -380,7 +380,7 @@ namespace nQuant
             return cubes.Take(colorCount).ToArray();
         }
 
-        private Pixel[] BuildLookups(Box[] cubes, ColorMoment[, , ,] moments)
+        private static Pixel[] BuildLookups(Box[] cubes, ColorMoment[, , ,] moments)
         {
             Pixel[] lookups = new Pixel[cubes.Length];
 
