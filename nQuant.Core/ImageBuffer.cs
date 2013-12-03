@@ -12,7 +12,7 @@ namespace nQuant
             Image = image;
         }
 
-        public Bitmap Image { get; set; }
+        public Bitmap Image { get; private set; }
 
         public IEnumerable<Pixel[]> PixelLines
         {
