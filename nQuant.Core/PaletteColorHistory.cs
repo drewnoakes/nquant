@@ -4,11 +4,11 @@ namespace nQuant
 {
     struct PaletteColorHistory
     {
-        public int Alpha;
-        public int Red;
-        public int Green;
-        public int Blue;
-        public int Sum;
+        public ulong Alpha;
+        public ulong Red;
+        public ulong Green;
+        public ulong Blue;
+        public ulong Sum;
 
         public Color ToNormalizedColor()
         {
